@@ -20,6 +20,39 @@ class WC_Auto_Product_Filters_Discovery {
 			'category_id' => 0,
 		);
 
+		$atts_context  = isset( $atts['context'] ) ? sanitize_key( (string) $atts['context'] ) : 'auto';
+		$atts_category = isset( $atts['category'] ) ? sanitize_text_field( (string) $atts['category'] ) : '';
+
+		if ( 'category' === $atts_context && '' !== $atts_category ) {
+			$term = is_numeric( $atts_category )
+				? get_term( absint( $atts_category ), 'product_cat' )
+				: get_term_by( 'slug', sanitize_title( $atts_category ), 'product_cat' );
+			if ( $term instanceof WP_Term ) {
+				$context['type'] = 'category';
+				$context['category_id'] = wcapf_get_context_category_id( (int) $term->term_id );
+				return $context;
+			}
+		}
+
+		if ( is_product_category() ) {
+			$queried = get_queried_object();
+			if ( $queried instanceof WP_Term ) {
+				$context['type'] = 'category';
+				$context['category_id'] = wcapf_get_context_category_id( (int) $queried->term_id );
+			}
+		}
+
+		if ( 0 === (int) $context['category_id'] ) {
+			$qv = get_query_var( 'product_cat' );
+			if ( is_string( $qv ) && '' !== trim( $qv ) ) {
+				$term = get_term_by( 'slug', sanitize_title( $qv ), 'product_cat' );
+				if ( $term instanceof WP_Term ) {
+					$context['type'] = 'category';
+					$context['category_id'] = wcapf_get_context_category_id( (int) $term->term_id );
+				}
+			}
+		}
+
 		return $context;
 	}
 
@@ -31,6 +64,7 @@ class WC_Auto_Product_Filters_Discovery {
 		}
 
 		$filters = $this->build_base_filters();
+		$filters = $this->restrict_filters_by_context( $filters, $context );
 
 		$filters = $this->apply_admin_settings( $filters, $context );
 		set_transient( $cache_key, $filters, HOUR_IN_SECONDS );
@@ -101,6 +135,25 @@ class WC_Auto_Product_Filters_Discovery {
 
 		$terms = wp_get_object_terms( $product_ids, $taxonomy, array( 'fields' => 'ids' ) );
 		return ! is_wp_error( $terms ) && ! empty( $terms );
+	}
+
+	private function restrict_filters_by_context( $filters, $context ) {
+		$category_id = isset( $context['category_id'] ) ? absint( $context['category_id'] ) : 0;
+		if ( $category_id < 1 ) {
+			return $filters;
+		}
+
+		foreach ( $filters as $key => $filter ) {
+			if ( empty( $filter['taxonomy'] ) ) {
+				continue;
+			}
+
+			if ( ! $this->taxonomy_has_terms_in_category( $filter['taxonomy'], $category_id ) ) {
+				unset( $filters[ $key ] );
+			}
+		}
+
+		return $filters;
 	}
 
 	private function default_display_type_for_taxonomy( $taxonomy ) {

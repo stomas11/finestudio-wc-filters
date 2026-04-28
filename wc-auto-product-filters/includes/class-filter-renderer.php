@@ -5,13 +5,23 @@ if ( ! defined( 'ABSPATH' ) ) {
 
 class WC_Auto_Product_Filters_Renderer {
 	private $discovery;
-	private $filtered_product_ids_cache = null;
+	private $filtered_product_ids_cache = array();
+	private $current_context = array(
+		'type'        => 'shop',
+		'category_id' => 0,
+	);
 
 	public function __construct( $discovery ) {
 		$this->discovery = $discovery;
 	}
 
 	public function render( $filters, $context ) {
+		$this->current_context = is_array( $context ) ? $context : array(
+			'type'        => 'shop',
+			'category_id' => 0,
+		);
+		$this->filtered_product_ids_cache = array();
+
 		$settings        = wcapf_get_global_settings();
 		$layout          = isset( $settings['filters_layout'] ) ? sanitize_key( $settings['filters_layout'] ) : 'stacked';
 		$columns_desktop = isset( $settings['filters_columns_desktop'] ) ? absint( $settings['filters_columns_desktop'] ) : 3;
@@ -300,7 +310,7 @@ class WC_Auto_Product_Filters_Renderer {
 			return array();
 		}
 
-		$product_ids = $this->get_filtered_product_ids_for_counts();
+		$product_ids = $this->get_filtered_product_ids_for_counts( $taxonomy );
 		if ( empty( $product_ids ) || ! taxonomy_exists( $taxonomy ) ) {
 			return array();
 		}
@@ -336,6 +346,11 @@ class WC_Auto_Product_Filters_Renderer {
 	}
 
 	private function has_filter_request_for_counts() {
+		$category_id = isset( $this->current_context['category_id'] ) ? absint( $this->current_context['category_id'] ) : 0;
+		if ( $category_id > 0 ) {
+			return true;
+		}
+
 		foreach ( $_GET as $key => $value ) {
 			$key = sanitize_key( $key );
 			if ( 0 !== strpos( $key, 'filter_' ) ) {
@@ -368,9 +383,19 @@ class WC_Auto_Product_Filters_Renderer {
 		return false;
 	}
 
-	private function get_filtered_product_ids_for_counts() {
-		if ( is_array( $this->filtered_product_ids_cache ) ) {
-			return $this->filtered_product_ids_cache;
+	private function get_filtered_product_ids_for_counts( $ignore_taxonomy = '' ) {
+		$ignore_taxonomy = sanitize_key( (string) $ignore_taxonomy );
+		$cache_key = '' !== $ignore_taxonomy ? $ignore_taxonomy : '__all__';
+		if ( isset( $this->filtered_product_ids_cache[ $cache_key ] ) && is_array( $this->filtered_product_ids_cache[ $cache_key ] ) ) {
+			return $this->filtered_product_ids_cache[ $cache_key ];
+		}
+
+		$original_get = $_GET;
+		if ( '' !== $ignore_taxonomy ) {
+			$param = 'filter_' . $ignore_taxonomy;
+			if ( isset( $_GET[ $param ] ) ) {
+				unset( $_GET[ $param ] );
+			}
 		}
 
 		$query_args = array(
@@ -385,9 +410,27 @@ class WC_Auto_Product_Filters_Renderer {
 		// Reuse the same WooCommerce query filter pipeline used by shortcode products,
 		// so counts reflect the active filters exactly.
 		$query_args = apply_filters( 'woocommerce_shortcode_products_query', $query_args, array(), 'products' );
-		$q = new WP_Query( $query_args );
 
-		$this->filtered_product_ids_cache = array_map( 'absint', is_array( $q->posts ) ? $q->posts : array() );
-		return $this->filtered_product_ids_cache;
+		$category_id = isset( $this->current_context['category_id'] ) ? absint( $this->current_context['category_id'] ) : 0;
+		if ( $category_id > 0 ) {
+			$tax_query = isset( $query_args['tax_query'] ) && is_array( $query_args['tax_query'] ) ? $query_args['tax_query'] : array();
+			$tax_query[] = array(
+				'taxonomy'         => 'product_cat',
+				'field'            => 'term_id',
+				'terms'            => array( $category_id ),
+				'include_children' => true,
+				'operator'         => 'IN',
+			);
+			if ( count( $tax_query ) > 1 && ! isset( $tax_query['relation'] ) ) {
+				$tax_query['relation'] = 'AND';
+			}
+			$query_args['tax_query'] = $tax_query;
+		}
+
+		$q = new WP_Query( $query_args );
+		$_GET = $original_get;
+
+		$this->filtered_product_ids_cache[ $cache_key ] = array_map( 'absint', is_array( $q->posts ) ? $q->posts : array() );
+		return $this->filtered_product_ids_cache[ $cache_key ];
 	}
 }

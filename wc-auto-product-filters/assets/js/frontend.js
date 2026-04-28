@@ -254,6 +254,31 @@
     }
   }
 
+  function syncResultCountWithRenderedProducts() {
+    var selector = resolveProductsSelector();
+    var $productsWrap = $(selector).first();
+    if (!$productsWrap.length) return;
+
+    var renderedCount = 0;
+    if ($productsWrap.is('ul')) {
+      renderedCount = $productsWrap.children('li.product, li.type-product, li[class*="product"]').length;
+    } else {
+      renderedCount = $productsWrap.find('li.product, li.type-product, li[class*="product"]').length;
+    }
+    if (renderedCount < 0) return;
+
+    var $results = $('.woocommerce-result-count');
+    if (!$results.length) return;
+
+    var text = renderedCount === 1
+      ? 'Zobrazuje sa 1 výsledok'
+      : ('Zobrazuje sa ' + renderedCount + ' výsledkov');
+
+    $results.each(function () {
+      $(this).text(text);
+    });
+  }
+
   function closePanel($wrap) {
     if (!$wrap || !$wrap.length) return;
     $wrap.find('.wcapf-panel-overlay').prop('hidden', true);
@@ -288,6 +313,8 @@
         replaceProductsFromDoc(doc);
         replaceOptionalSection('.woocommerce-pagination', doc);
         replaceOptionalSection('.woocommerce-result-count', doc, true);
+        syncResultCountWithRenderedProducts();
+        setTimeout(syncResultCountWithRenderedProducts, 80);
 
         if (wcapfData.updateBrowserUrl) {
           window.history.pushState({}, '', url);
