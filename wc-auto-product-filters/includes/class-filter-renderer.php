@@ -5,6 +5,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 
 class WC_Auto_Product_Filters_Renderer {
 	private $discovery;
+	private $filtered_product_ids_cache = null;
 
 	public function __construct( $discovery ) {
 		$this->discovery = $discovery;
@@ -143,7 +144,7 @@ class WC_Auto_Product_Filters_Renderer {
 		$terms = get_terms(
 			array(
 				'taxonomy'   => $filter['taxonomy'],
-				'hide_empty' => true,
+				'hide_empty' => false,
 			)
 		);
 
@@ -160,6 +161,8 @@ class WC_Auto_Product_Filters_Renderer {
 		$is_color_filter = in_array( $key, $color_attributes, true );
 		$use_color_swatches = $is_color_filter && 'swatches' === $display_type;
 		$use_text_swatches  = ! $is_color_filter && 'swatches' === $display_type;
+		$has_active_filters = $this->has_filter_request_for_counts();
+		$dynamic_counts     = $this->get_dynamic_term_counts( $filter['taxonomy'] );
 
 		if ( $use_color_swatches ) {
 			echo '<div class="wcapf-color-grid">';
@@ -180,7 +183,15 @@ class WC_Auto_Product_Filters_Renderer {
 		if ( 'radio' === $display_type ) {
 			echo '<label><input type="radio" name="' . esc_attr( $param ) . '" value="" ' . checked( empty( $selected_value ), true, false ) . '/> ' . esc_html__( 'Any', 'wc-auto-product-filters' ) . '</label>';
 			foreach ( $terms as $term ) {
-				echo '<label><input type="radio" name="' . esc_attr( $param ) . '" value="' . esc_attr( $term->slug ) . '" ' . checked( in_array( $term->slug, $selected_value, true ), true, false ) . '/> ' . esc_html( $term->name ) . '</label>';
+				$term_slug = sanitize_title( $term->slug );
+				$selected = in_array( $term_slug, $selected_value, true );
+				$term_count = isset( $dynamic_counts[ $term_slug ] )
+					? absint( $dynamic_counts[ $term_slug ] )
+					: ( $has_active_filters ? 0 : absint( $term->count ) );
+				$is_disabled = ( $term_count < 1 ) && ! $selected;
+				$disabled_attr = $is_disabled ? ' disabled="disabled"' : '';
+				$disabled_class = $is_disabled ? ' class="wcapf-option-disabled"' : '';
+				echo '<label' . $disabled_class . '><input type="radio" name="' . esc_attr( $param ) . '" value="' . esc_attr( $term_slug ) . '" ' . checked( $selected, true, false ) . $disabled_attr . '/> ' . esc_html( $term->name ) . ' - <em class="wcapf-term-count">' . esc_html( (string) $term_count ) . '</em></label>';
 			}
 			return true;
 		}
@@ -196,25 +207,32 @@ class WC_Auto_Product_Filters_Renderer {
 
 		foreach ( $terms as $term ) {
 			$selected = in_array( $term->slug, $selected_value, true );
+			$term_slug = sanitize_title( $term->slug );
+			$term_count = isset( $dynamic_counts[ $term_slug ] )
+				? absint( $dynamic_counts[ $term_slug ] )
+				: ( $has_active_filters ? 0 : absint( $term->count ) );
+			$is_disabled = ( $term_count < 1 ) && ! $selected;
+			$disabled_attr = $is_disabled ? ' disabled="disabled"' : '';
+			$disabled_class = $is_disabled ? ' wcapf-option-disabled' : '';
 
 			if ( $use_color_swatches ) {
 				$color = isset( $swatches[ $key ][ $term->slug ] ) ? sanitize_hex_color( $swatches[ $key ][ $term->slug ] ) : '';
-				echo '<label class="wcapf-swatch" title="' . esc_attr( $term->name ) . '" aria-label="' . esc_attr( $term->name ) . '" tabindex="0">';
-				echo '<input type="checkbox" name="' . esc_attr( $param ) . '[]" value="' . esc_attr( $term->slug ) . '" ' . checked( $selected, true, false ) . ' />';
+				echo '<label class="wcapf-swatch' . esc_attr( $disabled_class ) . '" title="' . esc_attr( $term->name ) . '" aria-label="' . esc_attr( $term->name ) . '" tabindex="0">';
+				echo '<input type="checkbox" name="' . esc_attr( $param ) . '[]" value="' . esc_attr( $term->slug ) . '" ' . checked( $selected, true, false ) . $disabled_attr . ' />';
 				echo '<span style="background-color:' . esc_attr( $color ? $color : '#d1d5db' ) . '"></span>';
 				echo '</label>';
 			} elseif ( $use_text_swatches ) {
-				echo '<label class="wcapf-text-swatch">';
-				echo '<input type="checkbox" name="' . esc_attr( $param ) . '[]" value="' . esc_attr( $term->slug ) . '" ' . checked( $selected, true, false ) . ' />';
-				echo '<span>' . esc_html( $term->name ) . ' - <em class="wcapf-term-count">' . esc_html( (string) absint( $term->count ) ) . '</em></span>';
+				echo '<label class="wcapf-text-swatch' . esc_attr( $disabled_class ) . '">';
+				echo '<input type="checkbox" name="' . esc_attr( $param ) . '[]" value="' . esc_attr( $term->slug ) . '" ' . checked( $selected, true, false ) . $disabled_attr . ' />';
+				echo '<span>' . esc_html( $term->name ) . ' - <em class="wcapf-term-count">' . esc_html( (string) $term_count ) . '</em></span>';
 				echo '</label>';
 			} else {
-				echo '<label><input type="checkbox" name="' . esc_attr( $param ) . '[]" value="' . esc_attr( $term->slug ) . '" ' . checked( $selected, true, false ) . ' />';
+				echo '<label class="' . esc_attr( trim( $disabled_class ) ) . '"><input type="checkbox" name="' . esc_attr( $param ) . '[]" value="' . esc_attr( $term->slug ) . '" ' . checked( $selected, true, false ) . $disabled_attr . ' />';
 				if ( $is_color_filter && 'checkbox' === $display_type ) {
 					$color = isset( $swatches[ $key ][ $term->slug ] ) ? sanitize_hex_color( $swatches[ $key ][ $term->slug ] ) : '';
 					echo '<span class="wcapf-inline-color" style="background-color:' . esc_attr( $color ? $color : '#d1d5db' ) . '"></span>';
 				}
-				echo ' ' . esc_html( $term->name ) . ' - <em class="wcapf-term-count">' . esc_html( (string) absint( $term->count ) ) . '</em></label>';
+				echo ' ' . esc_html( $term->name ) . ' - <em class="wcapf-term-count">' . esc_html( (string) $term_count ) . '</em></label>';
 			}
 		}
 
@@ -275,5 +293,101 @@ class WC_Auto_Product_Filters_Renderer {
 			'min' => $min,
 			'max' => $max,
 		);
+	}
+
+	private function get_dynamic_term_counts( $taxonomy ) {
+		if ( ! $this->has_filter_request_for_counts() ) {
+			return array();
+		}
+
+		$product_ids = $this->get_filtered_product_ids_for_counts();
+		if ( empty( $product_ids ) || ! taxonomy_exists( $taxonomy ) ) {
+			return array();
+		}
+
+		$counts = array();
+		foreach ( $product_ids as $product_id ) {
+			$product_id = absint( $product_id );
+			if ( $product_id < 1 ) {
+				continue;
+			}
+
+			$terms = get_the_terms( $product_id, $taxonomy );
+			if ( is_wp_error( $terms ) || empty( $terms ) ) {
+				continue;
+			}
+
+			foreach ( $terms as $term ) {
+				if ( ! ( $term instanceof WP_Term ) ) {
+					continue;
+				}
+				$slug = sanitize_title( $term->slug );
+				if ( '' === $slug ) {
+					continue;
+				}
+				if ( ! isset( $counts[ $slug ] ) ) {
+					$counts[ $slug ] = 0;
+				}
+				$counts[ $slug ]++;
+			}
+		}
+
+		return $counts;
+	}
+
+	private function has_filter_request_for_counts() {
+		foreach ( $_GET as $key => $value ) {
+			$key = sanitize_key( $key );
+			if ( 0 !== strpos( $key, 'filter_' ) ) {
+				continue;
+			}
+
+			if ( 'filter_min_price' === $key || 'filter_max_price' === $key ) {
+				$bounds = $this->get_price_bounds();
+				$min = isset( $_GET['filter_min_price'] ) && '' !== $_GET['filter_min_price'] ? (float) wc_clean( wp_unslash( $_GET['filter_min_price'] ) ) : (float) $bounds['min'];
+				$max = isset( $_GET['filter_max_price'] ) && '' !== $_GET['filter_max_price'] ? (float) wc_clean( wp_unslash( $_GET['filter_max_price'] ) ) : (float) $bounds['max'];
+				if ( $min > (float) $bounds['min'] || $max < (float) $bounds['max'] ) {
+					return true;
+				}
+				continue;
+			}
+
+			if ( is_array( $value ) ) {
+				$clean = array_filter( array_map( 'sanitize_text_field', wp_unslash( $value ) ) );
+				if ( ! empty( $clean ) ) {
+					return true;
+				}
+			} else {
+				$clean = sanitize_text_field( wp_unslash( $value ) );
+				if ( '' !== $clean ) {
+					return true;
+				}
+			}
+		}
+
+		return false;
+	}
+
+	private function get_filtered_product_ids_for_counts() {
+		if ( is_array( $this->filtered_product_ids_cache ) ) {
+			return $this->filtered_product_ids_cache;
+		}
+
+		$query_args = array(
+			'post_type'        => 'product',
+			'post_status'      => 'publish',
+			'fields'           => 'ids',
+			'posts_per_page'   => -1,
+			'no_found_rows'    => true,
+			'suppress_filters' => false,
+		);
+
+		// Reuse the same WooCommerce query filter pipeline used by shortcode products,
+		// so counts reflect the active filters exactly.
+		$query_args = apply_filters( 'woocommerce_shortcode_products_query', $query_args, array(), 'products' );
+		$q = new WP_Query( $query_args );
+
+		$this->filtered_product_ids_cache = array_map( 'absint', is_array( $q->posts ) ? $q->posts : array() );
+		return $this->filtered_product_ids_cache;
 	}
 }

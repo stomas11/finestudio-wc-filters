@@ -326,6 +326,16 @@
   border-color:var(--wcapf-primary);
   color:#fff;
 }
+.wcapf-option-disabled {
+  opacity:.45;
+}
+.wcapf-option-disabled input:not(:checked) {
+  pointer-events:none;
+}
+.wcapf-text-swatch.wcapf-option-disabled span,
+.wcapf-swatch.wcapf-option-disabled span {
+  cursor:not-allowed;
+}
 .wcapf-term-count {
   font-style:normal;
   color:#9ca3af;

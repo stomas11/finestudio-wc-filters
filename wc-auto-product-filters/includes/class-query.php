@@ -27,9 +27,10 @@ class WC_Auto_Product_Filters_Query {
 		$tax_query  = (array) $query->get( 'tax_query', array() );
 		$meta_query = (array) $query->get( 'meta_query', array() );
 
-		if ( isset( $_GET['filter_min_price'] ) || isset( $_GET['filter_max_price'] ) ) {
-			$min = isset( $_GET['filter_min_price'] ) && '' !== $_GET['filter_min_price'] ? (float) wc_clean( wp_unslash( $_GET['filter_min_price'] ) ) : 0;
-			$max = isset( $_GET['filter_max_price'] ) && '' !== $_GET['filter_max_price'] ? (float) wc_clean( wp_unslash( $_GET['filter_max_price'] ) ) : 999999999;
+		if ( $this->should_apply_price_filter() ) {
+			$bounds = $this->get_price_bounds();
+			$min = isset( $_GET['filter_min_price'] ) && '' !== $_GET['filter_min_price'] ? (float) wc_clean( wp_unslash( $_GET['filter_min_price'] ) ) : (float) $bounds['min'];
+			$max = isset( $_GET['filter_max_price'] ) && '' !== $_GET['filter_max_price'] ? (float) wc_clean( wp_unslash( $_GET['filter_max_price'] ) ) : (float) $bounds['max'];
 			$meta_query[] = array(
 				'key'     => '_price',
 				'value'   => array( $min, $max ),
@@ -46,7 +47,12 @@ class WC_Auto_Product_Filters_Query {
 		}
 
 		if ( isset( $_GET['filter_sale'] ) && '1' === sanitize_text_field( wp_unslash( $_GET['filter_sale'] ) ) ) {
-			$query->set( 'post__in', wc_get_product_ids_on_sale() );
+			$sale_ids = wc_get_product_ids_on_sale();
+			$current_post_in = $query->get( 'post__in' );
+			if ( is_array( $current_post_in ) && ! empty( $current_post_in ) ) {
+				$sale_ids = array_values( array_intersect( $sale_ids, $current_post_in ) );
+			}
+			$query->set( 'post__in', ! empty( $sale_ids ) ? $sale_ids : array( 0 ) );
 		}
 
 		foreach ( $_GET as $key => $raw_value ) {
@@ -139,9 +145,10 @@ class WC_Auto_Product_Filters_Query {
 			return $meta_query;
 		}
 
-		if ( isset( $_GET['filter_min_price'] ) || isset( $_GET['filter_max_price'] ) ) {
-			$min = isset( $_GET['filter_min_price'] ) && '' !== $_GET['filter_min_price'] ? (float) wc_clean( wp_unslash( $_GET['filter_min_price'] ) ) : 0;
-			$max = isset( $_GET['filter_max_price'] ) && '' !== $_GET['filter_max_price'] ? (float) wc_clean( wp_unslash( $_GET['filter_max_price'] ) ) : 999999999;
+		if ( $this->should_apply_price_filter() ) {
+			$bounds = $this->get_price_bounds();
+			$min = isset( $_GET['filter_min_price'] ) && '' !== $_GET['filter_min_price'] ? (float) wc_clean( wp_unslash( $_GET['filter_min_price'] ) ) : (float) $bounds['min'];
+			$max = isset( $_GET['filter_max_price'] ) && '' !== $_GET['filter_max_price'] ? (float) wc_clean( wp_unslash( $_GET['filter_max_price'] ) ) : (float) $bounds['max'];
 			$meta_query[] = array(
 				'key'     => '_price',
 				'value'   => array( $min, $max ),
@@ -184,7 +191,12 @@ class WC_Auto_Product_Filters_Query {
 		}
 
 		if ( isset( $_GET['filter_sale'] ) && '1' === sanitize_text_field( wp_unslash( $_GET['filter_sale'] ) ) ) {
-			$query->set( 'post__in', wc_get_product_ids_on_sale() );
+			$sale_ids = wc_get_product_ids_on_sale();
+			$current_post_in = $query->get( 'post__in' );
+			if ( is_array( $current_post_in ) && ! empty( $current_post_in ) ) {
+				$sale_ids = array_values( array_intersect( $sale_ids, $current_post_in ) );
+			}
+			$query->set( 'post__in', ! empty( $sale_ids ) ? $sale_ids : array( 0 ) );
 		}
 	}
 
@@ -196,9 +208,10 @@ class WC_Auto_Product_Filters_Query {
 		$tax_query  = isset( $query_args['tax_query'] ) && is_array( $query_args['tax_query'] ) ? $query_args['tax_query'] : array();
 		$meta_query = isset( $query_args['meta_query'] ) && is_array( $query_args['meta_query'] ) ? $query_args['meta_query'] : array();
 
-		if ( isset( $_GET['filter_min_price'] ) || isset( $_GET['filter_max_price'] ) ) {
-			$min = isset( $_GET['filter_min_price'] ) && '' !== $_GET['filter_min_price'] ? (float) wc_clean( wp_unslash( $_GET['filter_min_price'] ) ) : 0;
-			$max = isset( $_GET['filter_max_price'] ) && '' !== $_GET['filter_max_price'] ? (float) wc_clean( wp_unslash( $_GET['filter_max_price'] ) ) : 999999999;
+		if ( $this->should_apply_price_filter() ) {
+			$bounds = $this->get_price_bounds();
+			$min = isset( $_GET['filter_min_price'] ) && '' !== $_GET['filter_min_price'] ? (float) wc_clean( wp_unslash( $_GET['filter_min_price'] ) ) : (float) $bounds['min'];
+			$max = isset( $_GET['filter_max_price'] ) && '' !== $_GET['filter_max_price'] ? (float) wc_clean( wp_unslash( $_GET['filter_max_price'] ) ) : (float) $bounds['max'];
 			$meta_query[] = array(
 				'key'     => '_price',
 				'value'   => array( $min, $max ),
@@ -327,5 +340,50 @@ class WC_Auto_Product_Filters_Query {
 		);
 
 		return array_map( 'absint', $all_ids );
+	}
+
+	private function should_apply_price_filter() {
+		if ( ! isset( $_GET['filter_min_price'] ) && ! isset( $_GET['filter_max_price'] ) ) {
+			return false;
+		}
+
+		$bounds = $this->get_price_bounds();
+		$min = isset( $_GET['filter_min_price'] ) && '' !== $_GET['filter_min_price'] ? (float) wc_clean( wp_unslash( $_GET['filter_min_price'] ) ) : (float) $bounds['min'];
+		$max = isset( $_GET['filter_max_price'] ) && '' !== $_GET['filter_max_price'] ? (float) wc_clean( wp_unslash( $_GET['filter_max_price'] ) ) : (float) $bounds['max'];
+
+		return ( $min > (float) $bounds['min'] ) || ( $max < (float) $bounds['max'] );
+	}
+
+	private function get_price_bounds() {
+		global $wpdb;
+
+		$min = $wpdb->get_var(
+			"SELECT MIN(CAST(pm.meta_value AS DECIMAL(10,2)))
+			FROM {$wpdb->postmeta} pm
+			INNER JOIN {$wpdb->posts} p ON p.ID = pm.post_id
+			WHERE pm.meta_key = '_price'
+			AND p.post_type = 'product'
+			AND p.post_status = 'publish'"
+		); // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared,WordPress.DB.DirectDatabaseQuery.DirectQuery
+
+		$max = $wpdb->get_var(
+			"SELECT MAX(CAST(pm.meta_value AS DECIMAL(10,2)))
+			FROM {$wpdb->postmeta} pm
+			INNER JOIN {$wpdb->posts} p ON p.ID = pm.post_id
+			WHERE pm.meta_key = '_price'
+			AND p.post_type = 'product'
+			AND p.post_status = 'publish'"
+		); // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared,WordPress.DB.DirectDatabaseQuery.DirectQuery
+
+		$min = null !== $min ? floor( (float) $min ) : 0;
+		$max = null !== $max ? ceil( (float) $max ) : 1000;
+		if ( $max <= $min ) {
+			$max = $min + 1;
+		}
+
+		return array(
+			'min' => $min,
+			'max' => $max,
+		);
 	}
 }

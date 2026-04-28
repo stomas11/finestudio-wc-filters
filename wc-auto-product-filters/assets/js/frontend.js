@@ -91,7 +91,8 @@
 
       if (isSwatchMode) return;
 
-      var visibleCount = 6;
+      var isPanelOptions = $options.closest('.wcapf-panel').length > 0;
+      var visibleCount = isPanelOptions ? 6 : 4;
       if ($labels.length <= visibleCount) return;
 
       $labels.slice(visibleCount).addClass('wcapf-option-hidden');
@@ -169,6 +170,56 @@
     return new DOMParser().parseFromString(html, 'text/html');
   }
 
+  function buildCleanQuery($form) {
+    var params = new URLSearchParams();
+    var $price = $form.find('.wcapf-price-slider').first();
+    var priceDefaultMin = $price.length ? parseFloat($price.data('min')) : null;
+    var priceDefaultMax = $price.length ? parseFloat($price.data('max')) : null;
+
+    $form.find('[name]').each(function () {
+      var $el = $(this);
+      var name = $el.attr('name');
+      if (!name) return;
+      if (name === 'paged' || name === 'product-page') return;
+
+      var isFilter = name.indexOf('filter_') === 0;
+      var type = (($el.attr('type') || '').toLowerCase());
+      var tag = ($el.prop('tagName') || '').toLowerCase();
+      var value = $el.val();
+
+      if (type === 'checkbox' || type === 'radio') {
+        if (!$el.is(':checked')) return;
+        if (String(value || '').trim() === '') return;
+        params.append(name, value);
+        return;
+      }
+
+      if (tag === 'select' && $el.prop('multiple')) {
+        var selected = $el.val() || [];
+        selected.forEach(function (v) {
+          if (String(v || '').trim() !== '') {
+            params.append(name, v);
+          }
+        });
+        return;
+      }
+
+      if (isFilter && (name === 'filter_min_price' || name === 'filter_max_price')) {
+        var num = parseFloat(value);
+        if (isNaN(num)) return;
+        if (name === 'filter_min_price' && priceDefaultMin !== null && num === priceDefaultMin) return;
+        if (name === 'filter_max_price' && priceDefaultMax !== null && num === priceDefaultMax) return;
+        params.append(name, String(num));
+        return;
+      }
+
+      if (String(value || '').trim() === '') return;
+      params.append(name, value);
+    });
+
+    return params.toString();
+  }
+
   function resolveProductsSelector() {
     if (window.wcapfData && window.wcapfData.productsContainerId) {
       return '#' + window.wcapfData.productsContainerId;
@@ -191,14 +242,14 @@
     $current.replaceWith($incoming);
   }
 
-  function replaceOptionalSection(selector, doc) {
+  function replaceOptionalSection(selector, doc, keepCurrentWhenMissing) {
     var $current = $(selector).first();
     if (!$current.length) return;
 
     var $incoming = $(doc).find(selector).first();
     if ($incoming.length) {
       $current.replaceWith($incoming);
-    } else {
+    } else if (!keepCurrentWhenMissing) {
       $current.remove();
     }
   }
@@ -224,11 +275,7 @@
   function applyAjax($form, onDone) {
     if (!isAjaxEnabled()) return;
 
-    var query = $form.serialize();
-    var params = new URLSearchParams(query);
-    params.delete('paged');
-    params.delete('product-page');
-    query = params.toString();
+    var query = buildCleanQuery($form);
 
     var url = window.location.pathname + (query ? '?' + query : '');
 
@@ -240,7 +287,7 @@
 
         replaceProductsFromDoc(doc);
         replaceOptionalSection('.woocommerce-pagination', doc);
-        replaceOptionalSection('.woocommerce-result-count', doc);
+        replaceOptionalSection('.woocommerce-result-count', doc, true);
 
         if (wcapfData.updateBrowserUrl) {
           window.history.pushState({}, '', url);
@@ -258,11 +305,19 @@
   }
 
   $(document).on('submit', '.wcapf-form', function (e) {
-    if (!isAjaxEnabled()) return;
     e.preventDefault();
+
     var $form = $(this);
     var $wrap = $form.closest('.wcapf-filters');
     var isPanelForm = $form.hasClass('wcapf-panel-form');
+
+    if (!isAjaxEnabled()) {
+      var query = buildCleanQuery($form);
+      var url = window.location.pathname + (query ? '?' + query : '');
+      window.location.assign(url);
+      return;
+    }
+
     applyAjax($form, function () {
       if (isPanelForm) {
         closePanel($wrap);
