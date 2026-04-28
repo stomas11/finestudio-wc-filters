@@ -157,9 +157,9 @@ class WC_Auto_Product_Filters_Renderer {
 		$display_type   = isset( $filter['display_type'] ) ? $filter['display_type'] : 'checkbox';
 		$color_attributes = wcapf_get_color_attributes();
 		$is_color_filter = in_array( $key, $color_attributes, true );
+		$use_color_swatches = $is_color_filter && 'swatches' === $display_type;
 
-		if ( $is_color_filter ) {
-			$display_type = 'swatches';
+		if ( $use_color_swatches ) {
 			echo '<div class="wcapf-color-grid">';
 		}
 
@@ -204,7 +204,7 @@ class WC_Auto_Product_Filters_Renderer {
 			}
 		}
 
-		if ( $is_color_filter ) {
+		if ( $use_color_swatches ) {
 			echo '</div>';
 		}
 

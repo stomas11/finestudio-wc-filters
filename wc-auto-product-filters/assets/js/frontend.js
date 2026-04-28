@@ -83,13 +83,13 @@
       var $options = $(this);
       var $field = $options.closest('.wcapf-field');
       var $labels = $options.children('label');
-      var isColorAssigned = $field.data('color-assigned') === 1 || $field.data('color-assigned') === '1';
+      var isSwatchMode = $options.find('.wcapf-swatch').length > 0;
 
       $field.find('.wcapf-options-more').remove();
       $options.removeClass('wcapf-options-collapsed');
       $labels.removeClass('wcapf-option-hidden');
 
-      if (isColorAssigned) return;
+      if (isSwatchMode) return;
 
       var visibleCount = 6;
       if ($labels.length <= visibleCount) return;
