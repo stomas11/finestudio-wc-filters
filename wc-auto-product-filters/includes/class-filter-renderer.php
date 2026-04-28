@@ -30,6 +30,7 @@ class WC_Auto_Product_Filters_Renderer {
 		ob_start();
 		?>
 		<div class="wcapf-filters wcapf-layout-<?php echo esc_attr( $layout ); ?><?php echo $sidebar_panel ? ' wcapf-has-panel' : ''; ?>" style="--wcapf-columns-desktop:<?php echo esc_attr( (string) $effective_columns_desktop ); ?>;" data-context="<?php echo esc_attr( $context['type'] ); ?>" data-visible-filters="<?php echo esc_attr( (string) $visible_filters ); ?>" data-sidebar-panel="<?php echo $sidebar_panel ? '1' : '0'; ?>">
+			<h3 class="wcapf-heading"><?php esc_html_e( 'Filters', 'wc-auto-product-filters' ); ?></h3>
 			<form class="wcapf-form" method="get">
 				<?php $this->render_non_filter_query_args(); ?>
 				<div class="wcapf-fields">
@@ -158,9 +159,12 @@ class WC_Auto_Product_Filters_Renderer {
 		$color_attributes = wcapf_get_color_attributes();
 		$is_color_filter = in_array( $key, $color_attributes, true );
 		$use_color_swatches = $is_color_filter && 'swatches' === $display_type;
+		$use_text_swatches  = ! $is_color_filter && 'swatches' === $display_type;
 
 		if ( $use_color_swatches ) {
 			echo '<div class="wcapf-color-grid">';
+		} elseif ( $use_text_swatches ) {
+			echo '<div class="wcapf-text-swatches">';
 		}
 
 		if ( 'select' === $display_type ) {
@@ -193,18 +197,30 @@ class WC_Auto_Product_Filters_Renderer {
 		foreach ( $terms as $term ) {
 			$selected = in_array( $term->slug, $selected_value, true );
 
-			if ( 'swatches' === $display_type ) {
+			if ( $use_color_swatches ) {
 				$color = isset( $swatches[ $key ][ $term->slug ] ) ? sanitize_hex_color( $swatches[ $key ][ $term->slug ] ) : '';
 				echo '<label class="wcapf-swatch" title="' . esc_attr( $term->name ) . '" aria-label="' . esc_attr( $term->name ) . '" tabindex="0">';
 				echo '<input type="checkbox" name="' . esc_attr( $param ) . '[]" value="' . esc_attr( $term->slug ) . '" ' . checked( $selected, true, false ) . ' />';
 				echo '<span style="background-color:' . esc_attr( $color ? $color : '#d1d5db' ) . '"></span>';
 				echo '</label>';
+			} elseif ( $use_text_swatches ) {
+				echo '<label class="wcapf-text-swatch">';
+				echo '<input type="checkbox" name="' . esc_attr( $param ) . '[]" value="' . esc_attr( $term->slug ) . '" ' . checked( $selected, true, false ) . ' />';
+				echo '<span>' . esc_html( $term->name ) . ' - <em class="wcapf-term-count">' . esc_html( (string) absint( $term->count ) ) . '</em></span>';
+				echo '</label>';
 			} else {
-				echo '<label><input type="checkbox" name="' . esc_attr( $param ) . '[]" value="' . esc_attr( $term->slug ) . '" ' . checked( $selected, true, false ) . ' /> ' . esc_html( $term->name ) . '</label>';
+				echo '<label><input type="checkbox" name="' . esc_attr( $param ) . '[]" value="' . esc_attr( $term->slug ) . '" ' . checked( $selected, true, false ) . ' />';
+				if ( $is_color_filter && 'checkbox' === $display_type ) {
+					$color = isset( $swatches[ $key ][ $term->slug ] ) ? sanitize_hex_color( $swatches[ $key ][ $term->slug ] ) : '';
+					echo '<span class="wcapf-inline-color" style="background-color:' . esc_attr( $color ? $color : '#d1d5db' ) . '"></span>';
+				}
+				echo ' ' . esc_html( $term->name ) . ' - <em class="wcapf-term-count">' . esc_html( (string) absint( $term->count ) ) . '</em></label>';
 			}
 		}
 
 		if ( $use_color_swatches ) {
+			echo '</div>';
+		} elseif ( $use_text_swatches ) {
 			echo '</div>';
 		}
 

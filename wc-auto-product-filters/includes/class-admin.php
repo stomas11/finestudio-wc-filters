@@ -66,6 +66,8 @@ class WC_Auto_Product_Filters_Admin {
 		}
 		update_option( 'wcapf_filter_settings', $clean );
 
+		$all_filters = $this->discovery->discover_all_filters_for_admin();
+		$all_keys    = array_keys( $all_filters );
 		$overrides = array();
 		$cats      = isset( $_POST['overrides'] ) ? (array) wp_unslash( $_POST['overrides'] ) : array();
 		foreach ( $cats as $cat_id => $config ) {
@@ -74,8 +76,15 @@ class WC_Auto_Product_Filters_Admin {
 				continue;
 			}
 
-			$hidden_csv = sanitize_text_field( $config['hidden_filters_csv'] ?? '' );
-			$hidden     = array_filter( array_map( 'sanitize_key', array_map( 'trim', explode( ',', $hidden_csv ) ) ) );
+			$hidden_csv   = sanitize_text_field( $config['hidden_filters_csv'] ?? '' );
+			$hidden       = array_filter( array_map( 'sanitize_key', array_map( 'trim', explode( ',', $hidden_csv ) ) ) );
+			$enabled_map  = ! empty( $config['enabled'] ) && is_array( $config['enabled'] ) ? $config['enabled'] : array();
+			foreach ( $all_keys as $filter_key ) {
+				if ( ! isset( $enabled_map[ $filter_key ] ) ) {
+					$hidden[] = sanitize_key( $filter_key );
+				}
+			}
+			$hidden = array_values( array_unique( $hidden ) );
 
 			$order = array();
 			if ( ! empty( $config['order'] ) && is_array( $config['order'] ) ) {
@@ -178,7 +187,7 @@ class WC_Auto_Product_Filters_Admin {
 
 	public function render_filters_page() {
 		$context  = array( 'type' => 'shop', 'category_id' => 0 );
-		$filters  = $this->discovery->discover_filters( $context );
+		$filters  = $this->discovery->discover_all_filters_for_admin();
 		$cats     = get_terms( array( 'taxonomy' => 'product_cat', 'hide_empty' => false ) );
 		$override = wcapf_get_category_overrides();
 		$saved    = wcapf_get_filter_settings();
@@ -222,12 +231,15 @@ class WC_Auto_Product_Filters_Admin {
 							<input type="text" name="overrides[<?php echo esc_attr( (string) $cat->term_id ); ?>][hidden_filters_csv]" value="<?php echo esc_attr( isset( $cat_override['hidden_filters'] ) ? implode( ',', $cat_override['hidden_filters'] ) : '' ); ?>" />
 						</p>
 						<table class="widefat striped">
-							<thead><tr><th><?php esc_html_e( 'Filter Key', 'wc-auto-product-filters' ); ?></th><th><?php esc_html_e( 'Order', 'wc-auto-product-filters' ); ?></th><th><?php esc_html_e( 'Label', 'wc-auto-product-filters' ); ?></th><th><?php esc_html_e( 'Type', 'wc-auto-product-filters' ); ?></th></tr></thead>
+							<thead><tr><th><?php esc_html_e( 'Order', 'wc-auto-product-filters' ); ?></th><th><?php esc_html_e( 'Filter', 'wc-auto-product-filters' ); ?></th><th><?php esc_html_e( 'Enabled', 'wc-auto-product-filters' ); ?></th><th><?php esc_html_e( 'Label', 'wc-auto-product-filters' ); ?></th><th><?php esc_html_e( 'Type', 'wc-auto-product-filters' ); ?></th></tr></thead>
 							<tbody>
 							<?php foreach ( $filters as $key => $filter ) : ?>
 								<tr>
-									<td><?php echo esc_html( $key ); ?></td>
 									<td><input type="number" name="overrides[<?php echo esc_attr( (string) $cat->term_id ); ?>][order][<?php echo esc_attr( $key ); ?>]" value="<?php echo esc_attr( isset( $cat_override['order'][ $key ] ) ? (string) $cat_override['order'][ $key ] : '' ); ?>" /></td>
+									<td><?php echo esc_html( $key ); ?></td>
+									<td>
+										<input type="checkbox" name="overrides[<?php echo esc_attr( (string) $cat->term_id ); ?>][enabled][<?php echo esc_attr( $key ); ?>]" value="1" <?php checked( ! in_array( $key, $cat_override['hidden_filters'] ?? array(), true ), true ); ?> />
+									</td>
 									<td><input type="text" name="overrides[<?php echo esc_attr( (string) $cat->term_id ); ?>][label][<?php echo esc_attr( $key ); ?>]" value="<?php echo esc_attr( $cat_override['label'][ $key ] ?? '' ); ?>" /></td>
 									<td>
 										<select name="overrides[<?php echo esc_attr( (string) $cat->term_id ); ?>][display_type][<?php echo esc_attr( $key ); ?>]">

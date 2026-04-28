@@ -4,6 +4,16 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 class WC_Auto_Product_Filters_Discovery {
+	public function discover_all_filters_for_admin() {
+		$context = array(
+			'type'        => 'shop',
+			'category_id' => 0,
+		);
+
+		$filters = $this->build_base_filters();
+		return $this->apply_admin_settings( $filters, $context, true );
+	}
+
 	public function get_context( $atts = array() ) {
 		$context = array(
 			'type'        => 'shop',
@@ -20,10 +30,34 @@ class WC_Auto_Product_Filters_Discovery {
 			return $cached;
 		}
 
+		$filters = $this->build_base_filters();
+
+		$filters = $this->apply_admin_settings( $filters, $context );
+		set_transient( $cache_key, $filters, HOUR_IN_SECONDS );
+
+		return $filters;
+	}
+
+	private function build_base_filters() {
 		$filters = array(
-			'price'      => array( 'type' => 'core', 'label' => __( 'Price', 'wc-auto-product-filters' ), 'display_type' => 'range', 'order' => 10 ),
-			'stock'      => array( 'type' => 'core', 'label' => __( 'Availability', 'wc-auto-product-filters' ), 'display_type' => 'checkbox', 'order' => 20 ),
-			'sale'       => array( 'type' => 'core', 'label' => __( 'On sale', 'wc-auto-product-filters' ), 'display_type' => 'checkbox', 'order' => 30 ),
+			'price' => array(
+				'type'         => 'core',
+				'label'        => __( 'Price', 'wc-auto-product-filters' ),
+				'display_type' => 'range',
+				'order'        => 10,
+			),
+			'stock' => array(
+				'type'         => 'core',
+				'label'        => __( 'Availability', 'wc-auto-product-filters' ),
+				'display_type' => 'checkbox',
+				'order'        => 20,
+			),
+			'sale'  => array(
+				'type'         => 'core',
+				'label'        => __( 'On sale', 'wc-auto-product-filters' ),
+				'display_type' => 'checkbox',
+				'order'        => 30,
+			),
 		);
 
 		$taxonomies = wc_get_attribute_taxonomy_names();
@@ -42,9 +76,6 @@ class WC_Auto_Product_Filters_Discovery {
 			);
 			$order += 10;
 		}
-
-		$filters = $this->apply_admin_settings( $filters, $context );
-		set_transient( $cache_key, $filters, HOUR_IN_SECONDS );
 
 		return $filters;
 	}
@@ -81,12 +112,12 @@ class WC_Auto_Product_Filters_Discovery {
 		return 'checkbox';
 	}
 
-	private function apply_admin_settings( $filters, $context ) {
+	private function apply_admin_settings( $filters, $context, $keep_disabled = false ) {
 		$settings  = wcapf_get_filter_settings();
 
 		foreach ( $filters as $key => $filter ) {
 			$filter_settings = isset( $settings[ $key ] ) ? $settings[ $key ] : array();
-			if ( isset( $filter_settings['enabled'] ) && 0 === (int) $filter_settings['enabled'] ) {
+			if ( ! $keep_disabled && isset( $filter_settings['enabled'] ) && 0 === (int) $filter_settings['enabled'] ) {
 				unset( $filters[ $key ] );
 				continue;
 			}
@@ -101,6 +132,71 @@ class WC_Auto_Product_Filters_Discovery {
 
 			if ( isset( $filter_settings['order'] ) ) {
 				$filters[ $key ]['order'] = absint( $filter_settings['order'] );
+			}
+		}
+
+		uasort(
+			$filters,
+			function( $a, $b ) {
+				return (int) $a['order'] <=> (int) $b['order'];
+			}
+		);
+
+		if ( ! $keep_disabled ) {
+			$filters = $this->apply_category_overrides( $filters, $context );
+		}
+
+		return $filters;
+	}
+
+	private function apply_category_overrides( $filters, $context ) {
+		$category_id = isset( $context['category_id'] ) ? absint( $context['category_id'] ) : 0;
+		if ( ! $category_id ) {
+			return $filters;
+		}
+
+		$overrides = wcapf_get_category_overrides();
+		if ( empty( $overrides ) ) {
+			return $filters;
+		}
+
+		$override = $this->get_category_override( $overrides, $category_id );
+		if ( empty( $override ) || ! is_array( $override ) ) {
+			return $filters;
+		}
+
+		$hidden_filters = isset( $override['hidden_filters'] ) && is_array( $override['hidden_filters'] ) ? $override['hidden_filters'] : array();
+		foreach ( $hidden_filters as $hidden_key ) {
+			$hidden_key = sanitize_key( $hidden_key );
+			if ( isset( $filters[ $hidden_key ] ) ) {
+				unset( $filters[ $hidden_key ] );
+			}
+		}
+
+		if ( ! empty( $override['label'] ) && is_array( $override['label'] ) ) {
+			foreach ( $override['label'] as $key => $label ) {
+				$key = sanitize_key( $key );
+				if ( isset( $filters[ $key ] ) && '' !== trim( (string) $label ) ) {
+					$filters[ $key ]['label'] = sanitize_text_field( $label );
+				}
+			}
+		}
+
+		if ( ! empty( $override['display_type'] ) && is_array( $override['display_type'] ) ) {
+			foreach ( $override['display_type'] as $key => $display_type ) {
+				$key = sanitize_key( $key );
+				if ( isset( $filters[ $key ] ) && '' !== trim( (string) $display_type ) ) {
+					$filters[ $key ]['display_type'] = wcapf_sanitize_display_type( $display_type );
+				}
+			}
+		}
+
+		if ( ! empty( $override['order'] ) && is_array( $override['order'] ) ) {
+			foreach ( $override['order'] as $key => $order ) {
+				$key = sanitize_key( $key );
+				if ( isset( $filters[ $key ] ) ) {
+					$filters[ $key ]['order'] = absint( $order );
+				}
 			}
 		}
 
