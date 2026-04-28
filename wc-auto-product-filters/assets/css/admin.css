@@ -1,0 +1,4 @@
+.wcapf-override-box { border:1px solid #dcdcde; padding:10px; margin:12px 0; background:#fff; }
+.wcapf-override-box input[type='text'] { width:100%; }
+.wcapf-sortable-table tbody tr { cursor:move; }
+.wcapf-order { width:90px; }

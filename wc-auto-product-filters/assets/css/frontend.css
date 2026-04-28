@@ -1,0 +1,248 @@
+.wcapf-filters {
+  --wcapf-primary:#3b8f76;
+  border:1px solid #e5e7eb;
+  padding:1rem;
+  margin-bottom:1.5rem;
+}
+.wcapf-fields { display:block; }
+.wcapf-field { margin-bottom:1rem; }
+.wcapf-hidden-field { display:none; }
+.wcapf-title { display:block; background:none; border:0; font-weight:600; padding:0; margin-bottom:0.5rem; }
+.wcapf-options label { display:block; margin:0.25rem 0; }
+.wcapf-options input[type="checkbox"],
+.wcapf-options input[type="radio"] { accent-color:var(--wcapf-primary); }
+.wcapf-option-hidden { display:none !important; }
+.wcapf-options-more {
+  margin-top:0.4rem;
+  font-size:12px;
+  line-height:1.2;
+  padding:4px 8px;
+  border:1px solid #d1d5db;
+  background:#fff;
+  color:#374151;
+  border-radius:6px;
+  cursor:pointer;
+}
+.wcapf-filters .button,
+.wcapf-filters .wcapf-reset {
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  min-height:36px;
+  padding:0 14px;
+  border-radius:8px;
+  border:1px solid #d1d5db;
+  font-size:13px;
+  font-weight:600;
+  line-height:1;
+  text-decoration:none;
+  transition:all .15s ease;
+  cursor:pointer;
+}
+.wcapf-filters .button {
+  background:#111827;
+  color:#fff;
+  border-color:#111827;
+}
+.wcapf-filters .button:hover {
+  background:#1f2937;
+  border-color:#1f2937;
+}
+.wcapf-filters .button:focus-visible,
+.wcapf-filters .wcapf-reset:focus-visible {
+  outline:2px solid #3b82f6;
+  outline-offset:2px;
+}
+.wcapf-filters .wcapf-reset {
+  background:#fff;
+  color:#374151;
+}
+.wcapf-filters .wcapf-reset:hover {
+  background:#f9fafb;
+  border-color:#9ca3af;
+}
+.wcapf-filters .wcapf-submit { margin-right:8px; }
+.wcapf-filters .wcapf-show-all,
+.wcapf-filters .wcapf-close-panel {
+  background:var(--wcapf-primary);
+  color:#fff;
+  border-color:var(--wcapf-primary);
+  cursor:pointer;
+}
+.wcapf-panel .wcapf-close-panel {
+  margin-left:auto;
+  display:flex;
+  margin-bottom:0.75rem;
+}
+.wcapf-range-row { display:flex; gap:0.5rem; }
+.wcapf-range-row { align-items:center; gap:16px; }
+.wcapf-price-slider { display:flex; flex-direction:column; gap:0.5rem; }
+.wcapf-slider-rail { position:relative; height:30px; margin-top:6px; --wcapf-thumb-size:18px; --wcapf-track-size:8px; --wcapf-rail-center:15px; }
+.wcapf-range-track {
+  position:absolute;
+  left:0;
+  right:0;
+  top:calc(var(--wcapf-rail-center) - (var(--wcapf-track-size) / 2));
+  height:var(--wcapf-track-size);
+  background:#d9d9d9;
+  border-radius:999px;
+}
+.wcapf-range-progress {
+  position:absolute;
+  top:0;
+  height:100%;
+  background:var(--wcapf-primary);
+  border-radius:999px;
+}
+.wcapf-price-slider .wcapf-range {
+  -webkit-appearance:none;
+  appearance:none;
+  width:100%;
+  background:transparent;
+  position:absolute;
+  top:calc(var(--wcapf-rail-center) - (var(--wcapf-thumb-size) / 2));
+  left:0;
+  margin:0;
+  pointer-events:none;
+}
+.wcapf-price-slider .wcapf-range::-webkit-slider-thumb {
+  -webkit-appearance:none;
+  appearance:none;
+  width:var(--wcapf-thumb-size);
+  height:var(--wcapf-thumb-size);
+  border-radius:50%;
+  background:#fff;
+  border:2px solid var(--wcapf-primary);
+  box-shadow:0 2px 8px rgba(0,0,0,0.18);
+  pointer-events:auto;
+  cursor:pointer;
+}
+.wcapf-price-slider .wcapf-range::-moz-range-thumb {
+  width:var(--wcapf-thumb-size);
+  height:var(--wcapf-thumb-size);
+  border-radius:50%;
+  background:#fff;
+  border:2px solid var(--wcapf-primary);
+  box-shadow:0 2px 8px rgba(0,0,0,0.18);
+  pointer-events:auto;
+  cursor:pointer;
+}
+.wcapf-price-input-wrap {
+  flex:1;
+  min-width:0;
+  background:#ececec;
+  border-radius:10px;
+  padding:7px 10px;
+  display:flex;
+  align-items:center;
+  gap:8px;
+}
+.wcapf-price-input-wrap input {
+  width:100%;
+  border:0;
+  background:transparent;
+  font-size:15px;
+  font-weight:600;
+  color:#444;
+  outline:none;
+  box-shadow:none;
+}
+.wcapf-price-input-wrap input::-webkit-outer-spin-button,
+.wcapf-price-input-wrap input::-webkit-inner-spin-button {
+  -webkit-appearance:none;
+  margin:0;
+}
+.wcapf-price-currency {
+  font-size:15px;
+  font-weight:600;
+  color:#444;
+}
+.wcapf-price-separator {
+  font-size:28px;
+  line-height:1;
+  color:#111;
+}
+.wcapf-swatch { display:inline-flex; align-items:center; margin:0.25rem; cursor:pointer; }
+.wcapf-swatch input { position:absolute; opacity:0; }
+.wcapf-swatch span { width:22px; height:22px; border:1px solid #9ca3af; border-radius:4px; display:inline-block; }
+.wcapf-swatch input:checked + span { outline:2px solid var(--wcapf-primary); outline-offset:1px; }
+.wcapf-color-grid {
+  display:flex;
+  flex-wrap:wrap;
+  width:100px;
+  max-width:100%;
+  gap:4px;
+}
+.wcapf-color-grid .wcapf-swatch {
+  margin:0;
+  width:22px;
+  height:22px;
+  justify-content:center;
+}
+.wcapf-loading { opacity:0.6; pointer-events:none; }
+.wcapf-panel-open { overflow:hidden; }
+.wcapf-panel-overlay {
+  position:fixed;
+  inset:0;
+  background:rgba(0,0,0,0.4);
+  z-index:9998;
+}
+.wcapf-panel {
+  position:fixed;
+  top:0;
+  left:0;
+  width:min(420px, 92vw);
+  height:100vh;
+  background:#fff;
+  overflow:auto;
+  padding:1rem;
+  box-shadow:8px 0 30px rgba(0,0,0,0.2);
+  z-index:9999;
+}
+.wcapf-panel .wcapf-panel-form {
+  padding-bottom:0;
+}
+.wcapf-panel .wcapf-panel-form.wcapf-has-actions {
+  padding-bottom:72px;
+}
+.wcapf-panel[hidden],
+.wcapf-panel-overlay[hidden] { display:none !important; }
+.wcapf-panel .wcapf-fields { display:block !important; }
+.wcapf-panel .wcapf-panel-actions {
+  position:fixed;
+  bottom:0;
+  left:0;
+  right:0;
+  width:min(420px, 92vw);
+  background:#fff;
+  z-index:5;
+  border-top:1px solid #e5e7eb;
+  padding:0.75rem 1rem 0.5rem;
+  margin-top:0.75rem;
+  display:flex;
+  gap:0.5rem;
+  align-items:center;
+}
+.wcapf-panel .wcapf-panel-actions.wcapf-panel-actions-hidden {
+  display:none;
+}
+.wcapf-panel .wcapf-panel-actions .wcapf-apply-results {
+  flex:1;
+}
+.wcapf-panel .wcapf-panel-actions .wcapf-reset {
+  flex:0 0 auto;
+}
+
+@media (min-width: 1024px) {
+  .wcapf-layout-columns .wcapf-fields {
+    display:grid;
+    grid-template-columns: repeat(var(--wcapf-columns-desktop, 3), minmax(0, 1fr));
+    gap:4.5rem;
+  }
+  .wcapf-layout-columns .wcapf-field-price {
+    grid-column: span 2;
+  }
+  .wcapf-layout-columns .wcapf-field {
+    margin-bottom:0;
+  }
+}
