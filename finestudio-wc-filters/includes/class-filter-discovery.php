@@ -57,17 +57,10 @@ class WC_Auto_Product_Filters_Discovery {
 	}
 
 	public function discover_filters( $context ) {
-		$cache_key = 'fsapf_discovery_' . md5( wp_json_encode( $context ) );
-		$cached    = get_transient( $cache_key );
-		if ( false !== $cached && is_array( $cached ) ) {
-			return $cached;
-		}
-
 		$filters = $this->build_base_filters();
 		$filters = $this->restrict_filters_by_context( $filters, $context );
 
 		$filters = $this->apply_admin_settings( $filters, $context );
-		set_transient( $cache_key, $filters, HOUR_IN_SECONDS );
 
 		return $filters;
 	}

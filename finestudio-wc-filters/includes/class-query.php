@@ -4,7 +4,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 class WC_Auto_Product_Filters_Query {
-	private $price_bounds_cache = null;
+	private $price_bounds_cache = array();
 	private $attribute_match_cache = array();
 
 	public function init() {
@@ -377,29 +377,37 @@ class WC_Auto_Product_Filters_Query {
 	}
 
 	private function get_price_bounds() {
-		if ( is_array( $this->price_bounds_cache ) ) {
-			return $this->price_bounds_cache;
+		$category_id = $this->get_context_category_id();
+		$cache_key   = $category_id > 0 ? 'cat_' . $category_id : 'shop';
+		if ( isset( $this->price_bounds_cache[ $cache_key ] ) && is_array( $this->price_bounds_cache[ $cache_key ] ) ) {
+			return $this->price_bounds_cache[ $cache_key ];
 		}
 
 		global $wpdb;
 
-		$min = $wpdb->get_var(
-			"SELECT MIN(CAST(pm.meta_value AS DECIMAL(10,2)))
+		$base_from_where = "
 			FROM {$wpdb->postmeta} pm
 			INNER JOIN {$wpdb->posts} p ON p.ID = pm.post_id
+		";
+		$where = "
 			WHERE pm.meta_key = '_price'
 			AND p.post_type = 'product'
-			AND p.post_status = 'publish'"
-		); // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared,WordPress.DB.DirectDatabaseQuery.DirectQuery
+			AND p.post_status = 'publish'
+		";
 
-		$max = $wpdb->get_var(
-			"SELECT MAX(CAST(pm.meta_value AS DECIMAL(10,2)))
-			FROM {$wpdb->postmeta} pm
-			INNER JOIN {$wpdb->posts} p ON p.ID = pm.post_id
-			WHERE pm.meta_key = '_price'
-			AND p.post_type = 'product'
-			AND p.post_status = 'publish'"
-		); // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared,WordPress.DB.DirectDatabaseQuery.DirectQuery
+		if ( $category_id > 0 ) {
+			$base_from_where .= "
+				INNER JOIN {$wpdb->term_relationships} tr ON tr.object_id = p.ID
+				INNER JOIN {$wpdb->term_taxonomy} tt ON tt.term_taxonomy_id = tr.term_taxonomy_id
+			";
+			$where .= $wpdb->prepare( " AND tt.taxonomy = 'product_cat' AND tt.term_id = %d", $category_id );
+		}
+
+		$min_sql = "SELECT MIN(CAST(pm.meta_value AS DECIMAL(10,2))) {$base_from_where} {$where}";
+		$max_sql = "SELECT MAX(CAST(pm.meta_value AS DECIMAL(10,2))) {$base_from_where} {$where}";
+
+		$min = $wpdb->get_var( $min_sql ); // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared,WordPress.DB.DirectDatabaseQuery.DirectQuery
+		$max = $wpdb->get_var( $max_sql ); // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared,WordPress.DB.DirectDatabaseQuery.DirectQuery
 
 		$min = null !== $min ? floor( (float) $min ) : 0;
 		$max = null !== $max ? ceil( (float) $max ) : 1000;
@@ -411,8 +419,31 @@ class WC_Auto_Product_Filters_Query {
 			'min' => $min,
 			'max' => $max,
 		);
-		$this->price_bounds_cache = $result;
-		return $this->price_bounds_cache;
+		$this->price_bounds_cache[ $cache_key ] = $result;
+		return $this->price_bounds_cache[ $cache_key ];
+	}
+
+	private function get_context_category_id() {
+		$category_id = 0;
+
+		if ( is_product_category() ) {
+			$queried = get_queried_object();
+			if ( $queried instanceof WP_Term ) {
+				$category_id = (int) $queried->term_id;
+			}
+		}
+
+		if ( $category_id < 1 ) {
+			$qv = get_query_var( 'product_cat' );
+			if ( is_string( $qv ) && '' !== trim( $qv ) ) {
+				$term = get_term_by( 'slug', sanitize_title( $qv ), 'product_cat' );
+				if ( $term instanceof WP_Term ) {
+					$category_id = (int) $term->term_id;
+				}
+			}
+		}
+
+		return $category_id > 0 ? (int) fsapf_get_context_category_id( $category_id ) : 0;
 	}
 }
 

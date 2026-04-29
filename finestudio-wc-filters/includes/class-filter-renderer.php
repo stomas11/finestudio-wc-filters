@@ -7,7 +7,7 @@ class WC_Auto_Product_Filters_Renderer {
 	private $discovery;
 	private $filtered_product_ids_cache = array();
 	private $dynamic_term_counts_cache = array();
-	private $price_bounds_cache = null;
+	private $price_bounds_cache = array();
 	private $current_context = array(
 		'type'        => 'shop',
 		'category_id' => 0,
@@ -24,15 +24,15 @@ class WC_Auto_Product_Filters_Renderer {
 		);
 		$this->filtered_product_ids_cache = array();
 		$this->dynamic_term_counts_cache = array();
-		$this->price_bounds_cache        = null;
+		$this->price_bounds_cache        = array();
 
 		$settings        = fsapf_get_global_settings();
 		$layout          = isset( $settings['filters_layout'] ) ? sanitize_key( $settings['filters_layout'] ) : 'stacked';
 			$columns_desktop = isset( $settings['filters_columns_desktop'] ) ? absint( $settings['filters_columns_desktop'] ) : 3;
 			$visible_filters = isset( $settings['visible_filters'] ) ? absint( $settings['visible_filters'] ) : 3;
 			$sidebar_panel   = ! empty( $settings['sidebar_panel_enabled'] );
-			$mobile_button_only = ! empty( $settings['mobile_button_only_enabled'] );
-			$collapse_filters = ! empty( $settings['collapse_filters_enabled'] );
+		$mobile_button_only = ! empty( $settings['mobile_button_only_enabled'] );
+		$collapse_filters = ! empty( $settings['collapse_filters_enabled'] );
 			$submit_mode      = isset( $settings['submit_mode'] ) ? sanitize_key( $settings['submit_mode'] ) : 'auto';
 		$color_attributes = fsapf_get_color_attributes();
 		if ( $visible_filters < 1 ) {
@@ -45,7 +45,7 @@ class WC_Auto_Product_Filters_Renderer {
 
 		ob_start();
 		?>
-			<div class="wcapf-filters wcapf-layout-<?php echo esc_attr( $layout ); ?><?php echo $sidebar_panel ? ' wcapf-has-panel' : ''; ?><?php echo $mobile_button_only ? ' wcapf-mobile-button-only' : ''; ?>" style="--wcapf-columns-desktop:<?php echo esc_attr( (string) $effective_columns_desktop ); ?>;" data-context="<?php echo esc_attr( $context['type'] ); ?>" data-visible-filters="<?php echo esc_attr( (string) $visible_filters ); ?>" data-sidebar-panel="<?php echo $sidebar_panel ? '1' : '0'; ?>" data-mobile-button-only="<?php echo $mobile_button_only ? '1' : '0'; ?>">
+			<div class="wcapf-filters wcapf-layout-<?php echo esc_attr( $layout ); ?><?php echo $sidebar_panel ? ' wcapf-has-panel' : ''; ?><?php echo $mobile_button_only ? ' wcapf-mobile-button-only' : ''; ?>" style="--wcapf-columns-desktop:<?php echo esc_attr( (string) $effective_columns_desktop ); ?>;" data-context="<?php echo esc_attr( $context['type'] ); ?>" data-visible-filters="<?php echo esc_attr( (string) $visible_filters ); ?>" data-sidebar-panel="<?php echo $sidebar_panel ? '1' : '0'; ?>" data-mobile-button-only="<?php echo $mobile_button_only ? '1' : '0'; ?>" data-collapse-filters="<?php echo $collapse_filters ? '1' : '0'; ?>">
 				<?php if ( ! $mobile_button_only ) : ?>
 					<h3 class="wcapf-heading"><?php esc_html_e( 'Filters', 'finestudio-wc-filters' ); ?></h3>
 				<?php endif; ?>
@@ -287,29 +287,37 @@ class WC_Auto_Product_Filters_Renderer {
 	}
 
 	private function get_price_bounds() {
-		if ( is_array( $this->price_bounds_cache ) ) {
-			return $this->price_bounds_cache;
+		$category_id = isset( $this->current_context['category_id'] ) ? absint( $this->current_context['category_id'] ) : 0;
+		$cache_key   = $category_id > 0 ? 'cat_' . $category_id : 'shop';
+		if ( isset( $this->price_bounds_cache[ $cache_key ] ) && is_array( $this->price_bounds_cache[ $cache_key ] ) ) {
+			return $this->price_bounds_cache[ $cache_key ];
 		}
 
 		global $wpdb;
 
-		$min = $wpdb->get_var(
-			"SELECT MIN(CAST(pm.meta_value AS DECIMAL(10,2)))
+		$base_from_where = "
 			FROM {$wpdb->postmeta} pm
 			INNER JOIN {$wpdb->posts} p ON p.ID = pm.post_id
+		";
+		$where = "
 			WHERE pm.meta_key = '_price'
 			AND p.post_type = 'product'
-			AND p.post_status = 'publish'"
-		); // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared,WordPress.DB.DirectDatabaseQuery.DirectQuery
+			AND p.post_status = 'publish'
+		";
 
-		$max = $wpdb->get_var(
-			"SELECT MAX(CAST(pm.meta_value AS DECIMAL(10,2)))
-			FROM {$wpdb->postmeta} pm
-			INNER JOIN {$wpdb->posts} p ON p.ID = pm.post_id
-			WHERE pm.meta_key = '_price'
-			AND p.post_type = 'product'
-			AND p.post_status = 'publish'"
-		); // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared,WordPress.DB.DirectDatabaseQuery.DirectQuery
+		if ( $category_id > 0 ) {
+			$base_from_where .= "
+				INNER JOIN {$wpdb->term_relationships} tr ON tr.object_id = p.ID
+				INNER JOIN {$wpdb->term_taxonomy} tt ON tt.term_taxonomy_id = tr.term_taxonomy_id
+			";
+			$where .= $wpdb->prepare( " AND tt.taxonomy = 'product_cat' AND tt.term_id = %d", $category_id );
+		}
+
+		$min_sql = "SELECT MIN(CAST(pm.meta_value AS DECIMAL(10,2))) {$base_from_where} {$where}";
+		$max_sql = "SELECT MAX(CAST(pm.meta_value AS DECIMAL(10,2))) {$base_from_where} {$where}";
+
+		$min = $wpdb->get_var( $min_sql ); // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared,WordPress.DB.DirectDatabaseQuery.DirectQuery
+		$max = $wpdb->get_var( $max_sql ); // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared,WordPress.DB.DirectDatabaseQuery.DirectQuery
 
 		$min = null !== $min ? floor( (float) $min ) : 0;
 		$max = null !== $max ? ceil( (float) $max ) : 1000;
@@ -321,8 +329,8 @@ class WC_Auto_Product_Filters_Renderer {
 			'min' => $min,
 			'max' => $max,
 		);
-		$this->price_bounds_cache = $result;
-		return $this->price_bounds_cache;
+		$this->price_bounds_cache[ $cache_key ] = $result;
+		return $this->price_bounds_cache[ $cache_key ];
 	}
 
 	private function get_dynamic_term_counts( $taxonomy ) {

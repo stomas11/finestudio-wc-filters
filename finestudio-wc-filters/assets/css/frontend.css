@@ -9,6 +9,7 @@
 .wcapf-fields { display:block; }
 .wcapf-field { margin-bottom:1rem; }
 .wcapf-hidden-field { display:none; }
+.wcapf-mobile-hidden-field { display:none; }
 .wcapf-title { display:block; background:none; border:0; font-weight:600; padding:0; margin-bottom:0.5rem; }
 .wcapf-heading {
   margin:0 0 0.85rem;
@@ -143,6 +144,12 @@
   color:#fff;
   border-color:var(--wcapf-primary);
   cursor:pointer;
+}
+.wcapf-filters button.wcapf-show-all.button {
+  display:inline-flex !important;
+  visibility:visible !important;
+  -webkit-appearance:none;
+  appearance:none;
 }
 .wcapf-panel .wcapf-close-panel {
   margin-left:auto;
@@ -373,17 +380,15 @@
   left:0;
   width:min(350px, 92vw);
   height:100vh;
+  height:100dvh;
   background:#fff;
   overflow:auto;
-  padding:1rem;
+  padding:1rem 1rem calc(110px + env(safe-area-inset-bottom, 0px));
   box-shadow:8px 0 30px rgba(0,0,0,0.2);
   z-index:9999;
 }
 .wcapf-panel .wcapf-panel-form {
-  padding-bottom:0;
-}
-.wcapf-panel .wcapf-panel-form.wcapf-has-actions {
-  padding-bottom:72px;
+  padding-bottom:calc(110px + env(safe-area-inset-bottom, 0px));
 }
 .wcapf-panel[hidden],
 .wcapf-panel-overlay[hidden] { display:none !important; }
@@ -398,7 +403,7 @@
   background:#fff;
   z-index:5;
   border-top:1px solid #e5e7eb;
-  padding:0.75rem 1rem 0.5rem;
+  padding:0.75rem 1rem calc(0.5rem + env(safe-area-inset-bottom, 0px));
   margin-top:0.75rem;
   display:flex;
   gap:0.5rem;
@@ -509,6 +514,18 @@ body.wcapf-panel-open .wcapf-open-mobile-filters-fab {
 
 @media (max-width: 1023px) {
   .wcapf-mobile-button-only > .wcapf-form {
+    display:none;
+  }
+  .wcapf-filters:not(.wcapf-mobile-button-only) > .wcapf-form {
+    text-align:center;
+  }
+  .wcapf-filters:not(.wcapf-mobile-button-only) > .wcapf-form > .wcapf-fields {
+    text-align:left;
+  }
+  .wcapf-filters .wcapf-submit {
+    margin-right:0;
+  }
+  .wcapf-filters[data-collapse-filters="1"]:not(.wcapf-mobile-button-only):not(.wcapf-mobile-expanded) > .wcapf-form > .wcapf-fields > .wcapf-field:nth-child(n+2) {
     display:none;
   }
 }
