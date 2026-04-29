@@ -18,6 +18,7 @@ class WC_Auto_Product_Filters_Shortcode {
 	}
 
 	public function render_shortcode( $atts ) {
+		wcapf_profiler_begin();
 		self::$did_render = true;
 
 		$atts = shortcode_atts(
@@ -31,7 +32,9 @@ class WC_Auto_Product_Filters_Shortcode {
 
 		$context = $this->discovery->get_context( $atts );
 		$filters = $this->discovery->discover_filters( $context );
-		return $this->renderer->render( $filters, $context );
+		$html = $this->renderer->render( $filters, $context );
+		wcapf_profiler_end();
+		return $html;
 	}
 
 	public static function did_render() {

@@ -105,3 +105,34 @@ function wcapf_invalidate_discovery_cache() {
 	$wpdb->query( "DELETE FROM {$wpdb->options} WHERE option_name LIKE '_transient_wcapf_discovery_%'" ); // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery
 	$wpdb->query( "DELETE FROM {$wpdb->options} WHERE option_name LIKE '_transient_timeout_wcapf_discovery_%'" ); // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery
 }
+
+function wcapf_profiler_init() {
+	if ( ! isset( $GLOBALS['wcapf_profiler'] ) || ! is_array( $GLOBALS['wcapf_profiler'] ) ) {
+		$GLOBALS['wcapf_profiler'] = array(
+			'depth'   => 0,
+			'queries' => 0,
+		);
+	}
+}
+
+function wcapf_profiler_begin() {
+	wcapf_profiler_init();
+	$GLOBALS['wcapf_profiler']['depth']++;
+}
+
+function wcapf_profiler_end() {
+	wcapf_profiler_init();
+	$GLOBALS['wcapf_profiler']['depth'] = max( 0, (int) $GLOBALS['wcapf_profiler']['depth'] - 1 );
+}
+
+function wcapf_profiler_capture_query() {
+	wcapf_profiler_init();
+	if ( (int) $GLOBALS['wcapf_profiler']['depth'] > 0 ) {
+		$GLOBALS['wcapf_profiler']['queries']++;
+	}
+}
+
+function wcapf_profiler_get_queries_count() {
+	wcapf_profiler_init();
+	return (int) $GLOBALS['wcapf_profiler']['queries'];
+}

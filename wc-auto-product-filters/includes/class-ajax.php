@@ -18,6 +18,7 @@ class WC_Auto_Product_Filters_Ajax {
 	}
 
 	public function handle() {
+		wcapf_profiler_begin();
 		check_ajax_referer( 'wcapf_ajax_filter', 'nonce' );
 
 		parse_str( isset( $_POST['query'] ) ? wp_unslash( $_POST['query'] ) : '', $query_vars );
@@ -68,6 +69,7 @@ class WC_Auto_Product_Filters_Ajax {
 		$pagination_html = ob_get_clean();
 
 		wp_reset_postdata();
+		wcapf_profiler_end();
 
 		wp_send_json_success(
 			array(
@@ -77,4 +79,5 @@ class WC_Auto_Product_Filters_Ajax {
 			)
 		);
 	}
+
 }

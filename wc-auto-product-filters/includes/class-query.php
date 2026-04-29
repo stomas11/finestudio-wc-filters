@@ -4,6 +4,9 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 class WC_Auto_Product_Filters_Query {
+	private $price_bounds_cache = null;
+	private $attribute_match_cache = array();
+
 	public function init() {
 		add_filter( 'woocommerce_product_query_tax_query', array( $this, 'filter_wc_tax_query' ), 20, 2 );
 		add_filter( 'woocommerce_product_query_meta_query', array( $this, 'filter_wc_meta_query' ), 20, 2 );
@@ -132,16 +135,21 @@ class WC_Auto_Product_Filters_Query {
 	}
 
 	public function filter_wc_tax_query( $tax_query, $wc_query ) {
+		wcapf_profiler_begin();
 		if ( ! $this->has_filter_request() ) {
+			wcapf_profiler_end();
 			return $tax_query;
 		}
 		// Attribute filtering is handled via post__in fallback in apply_wc_query_flags(),
 		// because some shops store usable terms mainly on variations.
+		wcapf_profiler_end();
 		return $tax_query;
 	}
 
 	public function filter_wc_meta_query( $meta_query, $wc_query ) {
+		wcapf_profiler_begin();
 		if ( ! $this->has_filter_request() ) {
+			wcapf_profiler_end();
 			return $meta_query;
 		}
 
@@ -168,11 +176,14 @@ class WC_Auto_Product_Filters_Query {
 			$meta_query['relation'] = 'AND';
 		}
 
+		wcapf_profiler_end();
 		return $meta_query;
 	}
 
 	public function apply_wc_query_flags( $query ) {
+		wcapf_profiler_begin();
 		if ( ! $this->has_filter_request() ) {
+			wcapf_profiler_end();
 			return;
 		}
 
@@ -198,10 +209,13 @@ class WC_Auto_Product_Filters_Query {
 			}
 			$query->set( 'post__in', ! empty( $sale_ids ) ? $sale_ids : array( 0 ) );
 		}
+		wcapf_profiler_end();
 	}
 
 	public function filter_wc_shortcode_products_query( $query_args, $atts, $type ) {
+		wcapf_profiler_begin();
 		if ( ! $this->has_filter_request() ) {
+			wcapf_profiler_end();
 			return $query_args;
 		}
 
@@ -252,6 +266,7 @@ class WC_Auto_Product_Filters_Query {
 			}
 		}
 
+		wcapf_profiler_end();
 		return $query_args;
 	}
 
@@ -279,6 +294,11 @@ class WC_Auto_Product_Filters_Query {
 	private function get_product_ids_matching_attributes( $attribute_map ) {
 		if ( empty( $attribute_map ) ) {
 			return array();
+		}
+
+		$cache_key = md5( wp_json_encode( $attribute_map ) );
+		if ( isset( $this->attribute_match_cache[ $cache_key ] ) && is_array( $this->attribute_match_cache[ $cache_key ] ) ) {
+			return $this->attribute_match_cache[ $cache_key ];
 		}
 
 		$tax_query = array( 'relation' => 'AND' );
@@ -339,7 +359,9 @@ class WC_Auto_Product_Filters_Query {
 			)
 		);
 
-		return array_map( 'absint', $all_ids );
+		$result = array_map( 'absint', $all_ids );
+		$this->attribute_match_cache[ $cache_key ] = $result;
+		return $result;
 	}
 
 	private function should_apply_price_filter() {
@@ -355,6 +377,10 @@ class WC_Auto_Product_Filters_Query {
 	}
 
 	private function get_price_bounds() {
+		if ( is_array( $this->price_bounds_cache ) ) {
+			return $this->price_bounds_cache;
+		}
+
 		global $wpdb;
 
 		$min = $wpdb->get_var(
@@ -381,9 +407,11 @@ class WC_Auto_Product_Filters_Query {
 			$max = $min + 1;
 		}
 
-		return array(
+		$result = array(
 			'min' => $min,
 			'max' => $max,
 		);
+		$this->price_bounds_cache = $result;
+		return $this->price_bounds_cache;
 	}
 }

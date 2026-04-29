@@ -6,6 +6,8 @@ if ( ! defined( 'ABSPATH' ) ) {
 class WC_Auto_Product_Filters_Renderer {
 	private $discovery;
 	private $filtered_product_ids_cache = array();
+	private $dynamic_term_counts_cache = array();
+	private $price_bounds_cache = null;
 	private $current_context = array(
 		'type'        => 'shop',
 		'category_id' => 0,
@@ -21,6 +23,8 @@ class WC_Auto_Product_Filters_Renderer {
 			'category_id' => 0,
 		);
 		$this->filtered_product_ids_cache = array();
+		$this->dynamic_term_counts_cache = array();
+		$this->price_bounds_cache        = null;
 
 		$settings        = wcapf_get_global_settings();
 		$layout          = isset( $settings['filters_layout'] ) ? sanitize_key( $settings['filters_layout'] ) : 'stacked';
@@ -92,7 +96,8 @@ class WC_Auto_Product_Filters_Renderer {
 			<?php endif; ?>
 		</div>
 		<?php
-		return ob_get_clean();
+		$html = ob_get_clean();
+		return $html;
 	}
 
 	private function render_non_filter_query_args() {
@@ -273,6 +278,10 @@ class WC_Auto_Product_Filters_Renderer {
 	}
 
 	private function get_price_bounds() {
+		if ( is_array( $this->price_bounds_cache ) ) {
+			return $this->price_bounds_cache;
+		}
+
 		global $wpdb;
 
 		$min = $wpdb->get_var(
@@ -299,13 +308,20 @@ class WC_Auto_Product_Filters_Renderer {
 			$max = $min + 1;
 		}
 
-		return array(
+		$result = array(
 			'min' => $min,
 			'max' => $max,
 		);
+		$this->price_bounds_cache = $result;
+		return $this->price_bounds_cache;
 	}
 
 	private function get_dynamic_term_counts( $taxonomy ) {
+		$taxonomy = sanitize_key( (string) $taxonomy );
+		if ( isset( $this->dynamic_term_counts_cache[ $taxonomy ] ) && is_array( $this->dynamic_term_counts_cache[ $taxonomy ] ) ) {
+			return $this->dynamic_term_counts_cache[ $taxonomy ];
+		}
+
 		if ( ! $this->has_filter_request_for_counts() ) {
 			return array();
 		}
@@ -315,34 +331,38 @@ class WC_Auto_Product_Filters_Renderer {
 			return array();
 		}
 
-		$counts = array();
-		foreach ( $product_ids as $product_id ) {
-			$product_id = absint( $product_id );
-			if ( $product_id < 1 ) {
-				continue;
-			}
+		global $wpdb;
 
-			$terms = get_the_terms( $product_id, $taxonomy );
-			if ( is_wp_error( $terms ) || empty( $terms ) ) {
-				continue;
-			}
+		$counts       = array();
+		$product_ids  = array_values( array_filter( array_map( 'absint', $product_ids ) ) );
+		$placeholders = implode( ',', array_fill( 0, count( $product_ids ), '%d' ) );
+		$sql          = "
+			SELECT t.slug AS slug, COUNT(DISTINCT tr.object_id) AS term_count
+			FROM {$wpdb->term_relationships} tr
+			INNER JOIN {$wpdb->term_taxonomy} tt ON tr.term_taxonomy_id = tt.term_taxonomy_id
+			INNER JOIN {$wpdb->terms} t ON tt.term_id = t.term_id
+			WHERE tt.taxonomy = %s
+			AND tr.object_id IN ($placeholders)
+			GROUP BY t.slug
+		";
+		$params       = array_merge( array( $taxonomy ), $product_ids );
+		$rows         = $wpdb->get_results( $wpdb->prepare( $sql, $params ) ); // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared,WordPress.DB.DirectDatabaseQuery.DirectQuery
 
-			foreach ( $terms as $term ) {
-				if ( ! ( $term instanceof WP_Term ) ) {
+		if ( is_array( $rows ) ) {
+			foreach ( $rows as $row ) {
+				if ( ! isset( $row->slug ) ) {
 					continue;
 				}
-				$slug = sanitize_title( $term->slug );
+				$slug = sanitize_title( (string) $row->slug );
 				if ( '' === $slug ) {
 					continue;
 				}
-				if ( ! isset( $counts[ $slug ] ) ) {
-					$counts[ $slug ] = 0;
-				}
-				$counts[ $slug ]++;
+				$counts[ $slug ] = isset( $row->term_count ) ? absint( $row->term_count ) : 0;
 			}
 		}
 
-		return $counts;
+		$this->dynamic_term_counts_cache[ $taxonomy ] = $counts;
+		return $this->dynamic_term_counts_cache[ $taxonomy ];
 	}
 
 	private function has_filter_request_for_counts() {
