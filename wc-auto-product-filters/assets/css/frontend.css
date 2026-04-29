@@ -429,7 +429,7 @@
   right:16px;
   bottom:16px;
   z-index:99999;
-  display:inline-flex;
+  display:none;
   width:56px;
   height:56px;
   justify-content:center;
@@ -440,6 +440,9 @@
   border-color:var(--wcapf-primary);
   color:#fff;
   box-shadow:0 10px 24px rgba(0,0,0,0.25);
+}
+.wcapf-mobile-button-only.wcapf-fab-visible .wcapf-open-mobile-filters-fab {
+  display:inline-flex;
 }
 
 body.wcapf-panel-open .wcapf-open-mobile-filters-fab {

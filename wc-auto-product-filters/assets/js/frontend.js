@@ -297,6 +297,23 @@
     }, 0);
   }
 
+  function updateMobileFabVisibility() {
+    var isMobile = window.matchMedia('(max-width: 1023px)').matches;
+    var scrollTop = $(window).scrollTop() || 0;
+
+    $('.wcapf-filters.wcapf-mobile-button-only').each(function () {
+      var $wrap = $(this);
+      var $trigger = $wrap.find('.wcapf-open-mobile-filters').first();
+      if (!$trigger.length || !isMobile) {
+        $wrap.removeClass('wcapf-fab-visible');
+        return;
+      }
+
+      var triggerBottom = ($trigger.offset().top || 0) + ($trigger.outerHeight() || 0);
+      $wrap.toggleClass('wcapf-fab-visible', scrollTop > triggerBottom);
+    });
+  }
+
   function applyAjax($form, onDone) {
     if (!isAjaxEnabled()) return;
 
@@ -411,10 +428,16 @@
     initPriceSlider(document);
     initOptionsExpand(document);
     updatePanelActions($(document));
+    updateMobileFabVisibility();
   });
 
   $(window).on('load', function () {
     initOptionsExpand(document);
     updatePanelActions($(document));
+    updateMobileFabVisibility();
+  });
+
+  $(window).on('scroll resize', function () {
+    updateMobileFabVisibility();
   });
 })(jQuery);
