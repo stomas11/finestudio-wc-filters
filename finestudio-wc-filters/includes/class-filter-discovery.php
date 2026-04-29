@@ -29,7 +29,7 @@ class WC_Auto_Product_Filters_Discovery {
 				: get_term_by( 'slug', sanitize_title( $atts_category ), 'product_cat' );
 			if ( $term instanceof WP_Term ) {
 				$context['type'] = 'category';
-				$context['category_id'] = wcapf_get_context_category_id( (int) $term->term_id );
+				$context['category_id'] = fsapf_get_context_category_id( (int) $term->term_id );
 				return $context;
 			}
 		}
@@ -38,7 +38,7 @@ class WC_Auto_Product_Filters_Discovery {
 			$queried = get_queried_object();
 			if ( $queried instanceof WP_Term ) {
 				$context['type'] = 'category';
-				$context['category_id'] = wcapf_get_context_category_id( (int) $queried->term_id );
+				$context['category_id'] = fsapf_get_context_category_id( (int) $queried->term_id );
 			}
 		}
 
@@ -48,7 +48,7 @@ class WC_Auto_Product_Filters_Discovery {
 				$term = get_term_by( 'slug', sanitize_title( $qv ), 'product_cat' );
 				if ( $term instanceof WP_Term ) {
 					$context['type'] = 'category';
-					$context['category_id'] = wcapf_get_context_category_id( (int) $term->term_id );
+					$context['category_id'] = fsapf_get_context_category_id( (int) $term->term_id );
 				}
 			}
 		}
@@ -57,7 +57,7 @@ class WC_Auto_Product_Filters_Discovery {
 	}
 
 	public function discover_filters( $context ) {
-		$cache_key = 'wcapf_discovery_' . md5( wp_json_encode( $context ) );
+		$cache_key = 'fsapf_discovery_' . md5( wp_json_encode( $context ) );
 		$cached    = get_transient( $cache_key );
 		if ( false !== $cached && is_array( $cached ) ) {
 			return $cached;
@@ -76,19 +76,19 @@ class WC_Auto_Product_Filters_Discovery {
 		$filters = array(
 			'price' => array(
 				'type'         => 'core',
-				'label'        => __( 'Price', 'wc-auto-product-filters' ),
+				'label'        => __( 'Price', 'finestudio-wc-filters' ),
 				'display_type' => 'range',
 				'order'        => 10,
 			),
 			'stock' => array(
 				'type'         => 'core',
-				'label'        => __( 'Availability', 'wc-auto-product-filters' ),
+				'label'        => __( 'Availability', 'finestudio-wc-filters' ),
 				'display_type' => 'checkbox',
 				'order'        => 20,
 			),
 			'sale'  => array(
 				'type'         => 'core',
-				'label'        => __( 'On sale', 'wc-auto-product-filters' ),
+				'label'        => __( 'On sale', 'finestudio-wc-filters' ),
 				'display_type' => 'checkbox',
 				'order'        => 30,
 			),
@@ -157,7 +157,7 @@ class WC_Auto_Product_Filters_Discovery {
 	}
 
 	private function default_display_type_for_taxonomy( $taxonomy ) {
-		$manual_color_attributes = wcapf_get_color_attributes();
+		$manual_color_attributes = fsapf_get_color_attributes();
 		if ( in_array( $taxonomy, $manual_color_attributes, true ) ) {
 			return 'swatches';
 		}
@@ -166,7 +166,7 @@ class WC_Auto_Product_Filters_Discovery {
 	}
 
 	private function apply_admin_settings( $filters, $context, $keep_disabled = false ) {
-		$settings  = wcapf_get_filter_settings();
+		$settings  = fsapf_get_filter_settings();
 
 		foreach ( $filters as $key => $filter ) {
 			$filter_settings = isset( $settings[ $key ] ) ? $settings[ $key ] : array();
@@ -180,7 +180,7 @@ class WC_Auto_Product_Filters_Discovery {
 			}
 
 			if ( ! empty( $filter_settings['display_type'] ) ) {
-				$filters[ $key ]['display_type'] = wcapf_sanitize_display_type( $filter_settings['display_type'] );
+				$filters[ $key ]['display_type'] = fsapf_sanitize_display_type( $filter_settings['display_type'] );
 			}
 
 			if ( isset( $filter_settings['order'] ) ) {
@@ -208,7 +208,7 @@ class WC_Auto_Product_Filters_Discovery {
 			return $filters;
 		}
 
-		$overrides = wcapf_get_category_overrides();
+		$overrides = fsapf_get_category_overrides();
 		if ( empty( $overrides ) ) {
 			return $filters;
 		}
@@ -239,7 +239,7 @@ class WC_Auto_Product_Filters_Discovery {
 			foreach ( $override['display_type'] as $key => $display_type ) {
 				$key = sanitize_key( $key );
 				if ( isset( $filters[ $key ] ) && '' !== trim( (string) $display_type ) ) {
-					$filters[ $key ]['display_type'] = wcapf_sanitize_display_type( $display_type );
+					$filters[ $key ]['display_type'] = fsapf_sanitize_display_type( $display_type );
 				}
 			}
 		}
@@ -280,3 +280,5 @@ class WC_Auto_Product_Filters_Discovery {
 		return array();
 	}
 }
+
+

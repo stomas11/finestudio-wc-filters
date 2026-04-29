@@ -14,11 +14,11 @@ class WC_Auto_Product_Filters_Shortcode {
 	}
 
 	public function init() {
-		add_shortcode( 'wc_custom_product_filters', array( $this, 'render_shortcode' ) );
+		add_shortcode( 'fs_product_filters', array( $this, 'render_shortcode' ) );
 	}
 
 	public function render_shortcode( $atts ) {
-		wcapf_profiler_begin();
+		fsapf_profiler_begin();
 		self::$did_render = true;
 
 		$atts = shortcode_atts(
@@ -27,13 +27,13 @@ class WC_Auto_Product_Filters_Shortcode {
 				'category' => '',
 			),
 			$atts,
-			'wc_custom_product_filters'
+			'fs_product_filters'
 		);
 
 		$context = $this->discovery->get_context( $atts );
 		$filters = $this->discovery->discover_filters( $context );
 		$html = $this->renderer->render( $filters, $context );
-		wcapf_profiler_end();
+		fsapf_profiler_end();
 		return $html;
 	}
 
@@ -41,3 +41,5 @@ class WC_Auto_Product_Filters_Shortcode {
 		return self::$did_render;
 	}
 }
+
+

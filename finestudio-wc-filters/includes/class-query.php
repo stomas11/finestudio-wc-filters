@@ -135,21 +135,21 @@ class WC_Auto_Product_Filters_Query {
 	}
 
 	public function filter_wc_tax_query( $tax_query, $wc_query ) {
-		wcapf_profiler_begin();
+		fsapf_profiler_begin();
 		if ( ! $this->has_filter_request() ) {
-			wcapf_profiler_end();
+			fsapf_profiler_end();
 			return $tax_query;
 		}
 		// Attribute filtering is handled via post__in fallback in apply_wc_query_flags(),
 		// because some shops store usable terms mainly on variations.
-		wcapf_profiler_end();
+		fsapf_profiler_end();
 		return $tax_query;
 	}
 
 	public function filter_wc_meta_query( $meta_query, $wc_query ) {
-		wcapf_profiler_begin();
+		fsapf_profiler_begin();
 		if ( ! $this->has_filter_request() ) {
-			wcapf_profiler_end();
+			fsapf_profiler_end();
 			return $meta_query;
 		}
 
@@ -176,14 +176,14 @@ class WC_Auto_Product_Filters_Query {
 			$meta_query['relation'] = 'AND';
 		}
 
-		wcapf_profiler_end();
+		fsapf_profiler_end();
 		return $meta_query;
 	}
 
 	public function apply_wc_query_flags( $query ) {
-		wcapf_profiler_begin();
+		fsapf_profiler_begin();
 		if ( ! $this->has_filter_request() ) {
-			wcapf_profiler_end();
+			fsapf_profiler_end();
 			return;
 		}
 
@@ -209,13 +209,13 @@ class WC_Auto_Product_Filters_Query {
 			}
 			$query->set( 'post__in', ! empty( $sale_ids ) ? $sale_ids : array( 0 ) );
 		}
-		wcapf_profiler_end();
+		fsapf_profiler_end();
 	}
 
 	public function filter_wc_shortcode_products_query( $query_args, $atts, $type ) {
-		wcapf_profiler_begin();
+		fsapf_profiler_begin();
 		if ( ! $this->has_filter_request() ) {
-			wcapf_profiler_end();
+			fsapf_profiler_end();
 			return $query_args;
 		}
 
@@ -266,7 +266,7 @@ class WC_Auto_Product_Filters_Query {
 			}
 		}
 
-		wcapf_profiler_end();
+		fsapf_profiler_end();
 		return $query_args;
 	}
 
@@ -415,3 +415,5 @@ class WC_Auto_Product_Filters_Query {
 		return $this->price_bounds_cache;
 	}
 }
+
+

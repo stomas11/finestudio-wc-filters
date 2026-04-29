@@ -26,7 +26,7 @@ class WC_Auto_Product_Filters_Renderer {
 		$this->dynamic_term_counts_cache = array();
 		$this->price_bounds_cache        = null;
 
-		$settings        = wcapf_get_global_settings();
+		$settings        = fsapf_get_global_settings();
 		$layout          = isset( $settings['filters_layout'] ) ? sanitize_key( $settings['filters_layout'] ) : 'stacked';
 			$columns_desktop = isset( $settings['filters_columns_desktop'] ) ? absint( $settings['filters_columns_desktop'] ) : 3;
 			$visible_filters = isset( $settings['visible_filters'] ) ? absint( $settings['visible_filters'] ) : 3;
@@ -34,7 +34,7 @@ class WC_Auto_Product_Filters_Renderer {
 			$mobile_button_only = ! empty( $settings['mobile_button_only_enabled'] );
 			$collapse_filters = ! empty( $settings['collapse_filters_enabled'] );
 			$submit_mode      = isset( $settings['submit_mode'] ) ? sanitize_key( $settings['submit_mode'] ) : 'auto';
-		$color_attributes = wcapf_get_color_attributes();
+		$color_attributes = fsapf_get_color_attributes();
 		if ( $visible_filters < 1 ) {
 			$visible_filters = 3;
 		}
@@ -47,11 +47,11 @@ class WC_Auto_Product_Filters_Renderer {
 		?>
 			<div class="wcapf-filters wcapf-layout-<?php echo esc_attr( $layout ); ?><?php echo $sidebar_panel ? ' wcapf-has-panel' : ''; ?><?php echo $mobile_button_only ? ' wcapf-mobile-button-only' : ''; ?>" style="--wcapf-columns-desktop:<?php echo esc_attr( (string) $effective_columns_desktop ); ?>;" data-context="<?php echo esc_attr( $context['type'] ); ?>" data-visible-filters="<?php echo esc_attr( (string) $visible_filters ); ?>" data-sidebar-panel="<?php echo $sidebar_panel ? '1' : '0'; ?>" data-mobile-button-only="<?php echo $mobile_button_only ? '1' : '0'; ?>">
 				<?php if ( ! $mobile_button_only ) : ?>
-					<h3 class="wcapf-heading"><?php esc_html_e( 'Filters', 'wc-auto-product-filters' ); ?></h3>
+					<h3 class="wcapf-heading"><?php esc_html_e( 'Filters', 'finestudio-wc-filters' ); ?></h3>
 				<?php endif; ?>
 					<?php if ( $mobile_button_only ) : ?>
-						<button type="button" class="button wcapf-open-mobile-filters"><span class="wcapf-filter-fab-icon" aria-hidden="true"></span><span class="wcapf-open-mobile-filters-label"><?php esc_html_e( 'Filtrovat', 'wc-auto-product-filters' ); ?></span></button>
-						<button type="button" class="button wcapf-open-mobile-filters-fab" aria-label="<?php esc_attr_e( 'Filter', 'wc-auto-product-filters' ); ?>">
+						<button type="button" class="button wcapf-open-mobile-filters"><span class="wcapf-filter-fab-icon" aria-hidden="true"></span><span class="wcapf-open-mobile-filters-label"><?php esc_html_e( 'Filter', 'finestudio-wc-filters' ); ?></span></button>
+						<button type="button" class="button wcapf-open-mobile-filters-fab" aria-label="<?php esc_attr_e( 'Filter', 'finestudio-wc-filters' ); ?>">
 							<span class="wcapf-filter-fab-icon" aria-hidden="true"></span>
 						</button>
 					<?php endif; ?>
@@ -71,17 +71,17 @@ class WC_Auto_Product_Filters_Renderer {
 				<?php endforeach; ?>
 				</div>
 				<?php if ( $collapse_filters && $i > $visible_filters ) : ?>
-					<button type="button" class="button wcapf-show-all"><?php esc_html_e( 'Show all filters', 'wc-auto-product-filters' ); ?></button>
+					<button type="button" class="button wcapf-show-all"><?php esc_html_e( 'Show all filters', 'finestudio-wc-filters' ); ?></button>
 				<?php endif; ?>
 				<?php if ( 'button' === $submit_mode ) : ?>
-					<button type="submit" class="button wcapf-submit"><?php esc_html_e( 'Filter', 'wc-auto-product-filters' ); ?></button>
+					<button type="submit" class="button wcapf-submit"><?php esc_html_e( 'Filter', 'finestudio-wc-filters' ); ?></button>
 				<?php endif; ?>
-				<a class="wcapf-reset" href="<?php echo esc_url( $this->get_reset_url() ); ?>"><?php esc_html_e( 'Reset', 'wc-auto-product-filters' ); ?></a>
+				<a class="wcapf-reset" href="<?php echo esc_url( $this->get_reset_url() ); ?>"><?php esc_html_e( 'Reset', 'finestudio-wc-filters' ); ?></a>
 			</form>
 				<?php if ( $sidebar_panel || $mobile_button_only ) : ?>
 					<div class="wcapf-panel-overlay" hidden></div>
 					<div class="wcapf-panel" hidden>
-					<button type="button" class="button wcapf-close-panel"><?php esc_html_e( 'Close', 'wc-auto-product-filters' ); ?></button>
+					<button type="button" class="button wcapf-close-panel"><?php esc_html_e( 'Close', 'finestudio-wc-filters' ); ?></button>
 					<form class="wcapf-form wcapf-panel-form" method="get">
 						<?php $this->render_non_filter_query_args(); ?>
 						<div class="wcapf-fields">
@@ -97,8 +97,8 @@ class WC_Auto_Product_Filters_Renderer {
 						<?php endforeach; ?>
 						</div>
 						<div class="wcapf-panel-actions wcapf-panel-actions-hidden">
-							<button type="submit" class="button wcapf-apply-results"><?php esc_html_e( 'Show results', 'wc-auto-product-filters' ); ?></button>
-							<a class="wcapf-reset" href="<?php echo esc_url( $this->get_reset_url() ); ?>"><?php esc_html_e( 'Reset', 'wc-auto-product-filters' ); ?></a>
+							<button type="submit" class="button wcapf-apply-results"><?php esc_html_e( 'Show results', 'finestudio-wc-filters' ); ?></button>
+							<a class="wcapf-reset" href="<?php echo esc_url( $this->get_reset_url() ); ?>"><?php esc_html_e( 'Reset', 'finestudio-wc-filters' ); ?></a>
 						</div>
 					</form>
 				</div>
@@ -127,12 +127,12 @@ class WC_Auto_Product_Filters_Renderer {
 			echo '<div class="wcapf-price-slider" data-min="' . esc_attr( (string) $bounds['min'] ) . '" data-max="' . esc_attr( (string) $bounds['max'] ) . '">';
 			echo '<div class="wcapf-range-row">';
 			echo '<div class="wcapf-price-input-wrap">';
-			echo '<input class="wcapf-price-input-min" type="number" step="1" name="filter_min_price" placeholder="' . esc_attr__( 'Min', 'wc-auto-product-filters' ) . '" value="' . esc_attr( (string) $current_min ) . '" />';
+			echo '<input class="wcapf-price-input-min" type="number" step="1" name="filter_min_price" placeholder="' . esc_attr__( 'Min', 'finestudio-wc-filters' ) . '" value="' . esc_attr( (string) $current_min ) . '" />';
 			echo '<span class="wcapf-price-currency">€</span>';
 			echo '</div>';
 			echo '<span class="wcapf-price-separator">-</span>';
 			echo '<div class="wcapf-price-input-wrap">';
-			echo '<input class="wcapf-price-input-max" type="number" step="1" name="filter_max_price" placeholder="' . esc_attr__( 'Max', 'wc-auto-product-filters' ) . '" value="' . esc_attr( (string) $current_max ) . '" />';
+			echo '<input class="wcapf-price-input-max" type="number" step="1" name="filter_max_price" placeholder="' . esc_attr__( 'Max', 'finestudio-wc-filters' ) . '" value="' . esc_attr( (string) $current_max ) . '" />';
 			echo '<span class="wcapf-price-currency">€</span>';
 			echo '</div>';
 			echo '</div>';
@@ -147,13 +147,13 @@ class WC_Auto_Product_Filters_Renderer {
 
 		if ( 'stock' === $key ) {
 			$checked = isset( $_GET['filter_stock'] ) && 'instock' === sanitize_text_field( wp_unslash( $_GET['filter_stock'] ) );
-			echo '<label><input type="checkbox" name="filter_stock" value="instock" ' . checked( $checked, true, false ) . ' /> ' . esc_html__( 'In stock only', 'wc-auto-product-filters' ) . '</label>';
+			echo '<label><input type="checkbox" name="filter_stock" value="instock" ' . checked( $checked, true, false ) . ' /> ' . esc_html__( 'In stock only', 'finestudio-wc-filters' ) . '</label>';
 			return true;
 		}
 
 		if ( 'sale' === $key ) {
 			$checked = isset( $_GET['filter_sale'] ) && '1' === sanitize_text_field( wp_unslash( $_GET['filter_sale'] ) );
-			echo '<label><input type="checkbox" name="filter_sale" value="1" ' . checked( $checked, true, false ) . ' /> ' . esc_html__( 'On sale only', 'wc-auto-product-filters' ) . '</label>';
+			echo '<label><input type="checkbox" name="filter_sale" value="1" ' . checked( $checked, true, false ) . ' /> ' . esc_html__( 'On sale only', 'finestudio-wc-filters' ) . '</label>';
 			return true;
 		}
 
@@ -179,9 +179,9 @@ class WC_Auto_Product_Filters_Renderer {
 		$param          = 'filter_' . $key;
 		$selected_value = isset( $_GET[ $param ] ) ? (array) wp_unslash( $_GET[ $param ] ) : array();
 		$selected_value = array_map( 'sanitize_title', $selected_value );
-		$swatches       = wcapf_get_color_swatches();
+		$swatches       = fsapf_get_color_swatches();
 		$display_type   = isset( $filter['display_type'] ) ? $filter['display_type'] : 'checkbox';
-		$color_attributes = wcapf_get_color_attributes();
+		$color_attributes = fsapf_get_color_attributes();
 		$is_color_filter = in_array( $key, $color_attributes, true );
 		$use_color_swatches = $is_color_filter && 'swatches' === $display_type;
 		$use_text_swatches  = ! $is_color_filter && 'swatches' === $display_type;
@@ -196,7 +196,7 @@ class WC_Auto_Product_Filters_Renderer {
 
 		if ( 'select' === $display_type ) {
 			echo '<select name="' . esc_attr( $param ) . '">';
-			echo '<option value="">' . esc_html__( 'Any', 'wc-auto-product-filters' ) . '</option>';
+			echo '<option value="">' . esc_html__( 'Any', 'finestudio-wc-filters' ) . '</option>';
 			foreach ( $terms as $term ) {
 				echo '<option value="' . esc_attr( $term->slug ) . '" ' . selected( in_array( $term->slug, $selected_value, true ), true, false ) . '>' . esc_html( $term->name ) . '</option>';
 			}
@@ -205,7 +205,7 @@ class WC_Auto_Product_Filters_Renderer {
 		}
 
 		if ( 'radio' === $display_type ) {
-			echo '<label><input type="radio" name="' . esc_attr( $param ) . '" value="" ' . checked( empty( $selected_value ), true, false ) . '/> ' . esc_html__( 'Any', 'wc-auto-product-filters' ) . '</label>';
+			echo '<label><input type="radio" name="' . esc_attr( $param ) . '" value="" ' . checked( empty( $selected_value ), true, false ) . '/> ' . esc_html__( 'Any', 'finestudio-wc-filters' ) . '</label>';
 			foreach ( $terms as $term ) {
 				$term_slug = sanitize_title( $term->slug );
 				$selected = in_array( $term_slug, $selected_value, true );
@@ -463,3 +463,5 @@ class WC_Auto_Product_Filters_Renderer {
 		return $this->filtered_product_ids_cache[ $cache_key ];
 	}
 }
+
+

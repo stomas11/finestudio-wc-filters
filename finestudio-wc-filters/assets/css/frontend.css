@@ -484,6 +484,10 @@ body.wcapf-panel-open .wcapf-open-mobile-filters-fab {
 }
 
 @media (min-width: 1024px) {
+  .wcapf-mobile-button-only .wcapf-open-mobile-filters,
+  .wcapf-mobile-button-only .wcapf-open-mobile-filters-fab {
+    display:none !important;
+  }
   .wcapf-panel {
     width:350px;
   }

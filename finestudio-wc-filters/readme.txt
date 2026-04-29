@@ -6,7 +6,7 @@ Requires PHP: 7.4
 Stable tag: 0.1.0
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
-Text Domain: wc-auto-product-filters
+Text Domain: finestudio-wc-filters
 
 Advanced WooCommerce product filters with shortcode, category-aware context, AJAX/non-AJAX mode, color swatches, dynamic counts and admin controls.
 
@@ -81,7 +81,7 @@ Main goals:
 == Shortcode ==
 
 Use:
-`[wc_custom_product_filters]`
+`[fs_product_filters]`
 
 Optional attributes:
 - `context="auto|category"` (default: `auto`)
@@ -133,3 +133,4 @@ For large catalogs:
 - Color attributes + swatches support.
 - Optional AJAX refresh and clean URL handling.
 - Dynamic counts and disabled options.
+

@@ -96,7 +96,7 @@
       if ($labels.length <= visibleCount) return;
 
       $labels.slice(visibleCount).addClass('wcapf-option-hidden');
-      var $btn = $('<button type="button" class="wcapf-options-more">Zobrazit dalsie moznosti</button>');
+      var $btn = $('<button type="button" class="wcapf-options-more">Show more options</button>');
       $btn.on('click', function () {
         $labels.removeClass('wcapf-option-hidden');
         $btn.remove();
@@ -271,8 +271,8 @@
     if (!$results.length) return;
 
     var text = renderedCount === 1
-      ? 'Zobrazuje sa 1 výsledok'
-      : ('Zobrazuje sa ' + renderedCount + ' výsledkov');
+      ? 'Showing 1 result'
+      : ('Showing ' + renderedCount + ' results');
 
     $results.each(function () {
       $(this).text(text);
@@ -441,3 +441,4 @@
     updateMobileFabVisibility();
   });
 })(jQuery);
+
