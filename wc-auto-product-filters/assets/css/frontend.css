@@ -4,7 +4,7 @@
   padding:1rem;
   margin-bottom:1.5rem;
 }
-.wcapf-filters.wcapf-layout-columns.wcapf-has-panel { overflow:hidden; }
+.wcapf-filters.wcapf-layout-columns.wcapf-has-panel { border:0; overflow:hidden; }
 .wcapf-fields { display:block; }
 .wcapf-field { margin-bottom:1rem; }
 .wcapf-hidden-field { display:none; }
