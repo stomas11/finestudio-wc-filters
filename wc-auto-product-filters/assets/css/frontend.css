@@ -1,9 +1,10 @@
-﻿.wcapf-filters {
+.wcapf-filters {
   --wcapf-primary:#3b8f76;
   border:1px solid #e5e7eb;
   padding:1rem;
   margin-bottom:1.5rem;
 }
+.wcapf-filters.wcapf-mobile-button-only { margin-bottom:0; }
 .wcapf-filters.wcapf-layout-columns.wcapf-has-panel { border:0; overflow:hidden; }
 .wcapf-fields { display:block; }
 .wcapf-field { margin-bottom:1rem; }
@@ -136,7 +137,8 @@
 }
 .wcapf-filters .wcapf-submit { margin-right:8px; }
 .wcapf-filters .wcapf-show-all,
-.wcapf-filters .wcapf-close-panel {
+.wcapf-filters .wcapf-close-panel,
+.wcapf-filters .wcapf-open-mobile-filters {
   background:var(--wcapf-primary);
   color:#fff;
   border-color:var(--wcapf-primary);
@@ -412,6 +414,72 @@
   flex:0 0 auto;
 }
 
+.wcapf-mobile-button-only .wcapf-open-mobile-filters {
+  display:flex;
+  width:100%;
+  min-height:44px;
+  justify-content:center;
+  align-items:center;
+  gap:8px;
+  margin:0 0 12px;
+}
+
+.wcapf-mobile-button-only .wcapf-open-mobile-filters-fab {
+  position:fixed;
+  right:16px;
+  bottom:16px;
+  z-index:99999;
+  display:inline-flex;
+  width:56px;
+  height:56px;
+  justify-content:center;
+  align-items:center;
+  padding:0;
+  border-radius:999px;
+  background:var(--wcapf-primary);
+  border-color:var(--wcapf-primary);
+  color:#fff;
+  box-shadow:0 10px 24px rgba(0,0,0,0.25);
+}
+
+body.wcapf-panel-open .wcapf-open-mobile-filters-fab {
+  display:none !important;
+}
+
+.wcapf-mobile-button-only .wcapf-filter-fab-icon {
+  width:18px;
+  height:16px;
+  display:inline-flex;
+  position:relative;
+  align-items:center;
+  justify-content:center;
+}
+.wcapf-mobile-button-only .wcapf-filter-fab-icon::before {
+  content:"";
+  position:absolute;
+  left:0;
+  right:0;
+  margin:auto;
+  top:0;
+  width:0;
+  height:0;
+  border-left:9px solid transparent;
+  border-right:9px solid transparent;
+  border-top:10px solid #fff;
+}
+.wcapf-mobile-button-only .wcapf-filter-fab-icon::after {
+  content:"";
+  position:absolute;
+  left:0;
+  right:0;
+  margin:auto;
+  top:10px;
+  width:4px;
+  height:6px;
+  background:#fff;
+  border-radius:1px;
+}
+
 @media (min-width: 1024px) {
   .wcapf-panel {
     width:350px;
@@ -431,6 +499,13 @@
     margin-bottom:0;
   }
 }
+
+@media (max-width: 1023px) {
+  .wcapf-mobile-button-only > .wcapf-form {
+    display:none;
+  }
+}
+
 
 
 

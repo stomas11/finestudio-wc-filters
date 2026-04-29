@@ -92,13 +92,37 @@ class WC_Auto_Product_Filters_Plugin {
 			'value'    => true,
 			'selected' => true,
 		);
-		$allowed_tags['button'] = array(
-			'type'  => true,
-			'class' => true,
-		);
+			$allowed_tags['button'] = array(
+				'type'  => true,
+				'class' => true,
+				'aria-label' => true,
+			);
+			$allowed_tags['span'] = array(
+				'class' => true,
+				'aria-hidden' => true,
+			);
+			$allowed_tags['svg'] = array(
+				'viewbox'    => true,
+				'role'       => true,
+				'focusable'  => true,
+				'aria-hidden'=> true,
+				'class'      => true,
+				'width'      => true,
+				'height'     => true,
+				'fill'       => true,
+				'stroke'     => true,
+			);
+			$allowed_tags['path'] = array(
+				'd'               => true,
+				'fill'            => true,
+				'stroke'          => true,
+				'stroke-width'    => true,
+				'stroke-linecap'  => true,
+				'stroke-linejoin' => true,
+			);
 
-		return $allowed_tags;
-	}
+			return $allowed_tags;
+		}
 
 	public function render_filters_on_no_results() {
 		if ( ! ( is_shop() || is_product_taxonomy() || is_search() ) ) {

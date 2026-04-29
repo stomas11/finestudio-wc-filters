@@ -28,11 +28,12 @@ class WC_Auto_Product_Filters_Renderer {
 
 		$settings        = wcapf_get_global_settings();
 		$layout          = isset( $settings['filters_layout'] ) ? sanitize_key( $settings['filters_layout'] ) : 'stacked';
-		$columns_desktop = isset( $settings['filters_columns_desktop'] ) ? absint( $settings['filters_columns_desktop'] ) : 3;
-		$visible_filters = isset( $settings['visible_filters'] ) ? absint( $settings['visible_filters'] ) : 3;
-		$sidebar_panel   = ! empty( $settings['sidebar_panel_enabled'] );
-		$collapse_filters = ! empty( $settings['collapse_filters_enabled'] );
-		$submit_mode      = isset( $settings['submit_mode'] ) ? sanitize_key( $settings['submit_mode'] ) : 'auto';
+			$columns_desktop = isset( $settings['filters_columns_desktop'] ) ? absint( $settings['filters_columns_desktop'] ) : 3;
+			$visible_filters = isset( $settings['visible_filters'] ) ? absint( $settings['visible_filters'] ) : 3;
+			$sidebar_panel   = ! empty( $settings['sidebar_panel_enabled'] );
+			$mobile_button_only = ! empty( $settings['mobile_button_only_enabled'] );
+			$collapse_filters = ! empty( $settings['collapse_filters_enabled'] );
+			$submit_mode      = isset( $settings['submit_mode'] ) ? sanitize_key( $settings['submit_mode'] ) : 'auto';
 		$color_attributes = wcapf_get_color_attributes();
 		if ( $visible_filters < 1 ) {
 			$visible_filters = 3;
@@ -44,9 +45,17 @@ class WC_Auto_Product_Filters_Renderer {
 
 		ob_start();
 		?>
-		<div class="wcapf-filters wcapf-layout-<?php echo esc_attr( $layout ); ?><?php echo $sidebar_panel ? ' wcapf-has-panel' : ''; ?>" style="--wcapf-columns-desktop:<?php echo esc_attr( (string) $effective_columns_desktop ); ?>;" data-context="<?php echo esc_attr( $context['type'] ); ?>" data-visible-filters="<?php echo esc_attr( (string) $visible_filters ); ?>" data-sidebar-panel="<?php echo $sidebar_panel ? '1' : '0'; ?>">
-			<h3 class="wcapf-heading"><?php esc_html_e( 'Filters', 'wc-auto-product-filters' ); ?></h3>
-			<form class="wcapf-form" method="get">
+			<div class="wcapf-filters wcapf-layout-<?php echo esc_attr( $layout ); ?><?php echo $sidebar_panel ? ' wcapf-has-panel' : ''; ?><?php echo $mobile_button_only ? ' wcapf-mobile-button-only' : ''; ?>" style="--wcapf-columns-desktop:<?php echo esc_attr( (string) $effective_columns_desktop ); ?>;" data-context="<?php echo esc_attr( $context['type'] ); ?>" data-visible-filters="<?php echo esc_attr( (string) $visible_filters ); ?>" data-sidebar-panel="<?php echo $sidebar_panel ? '1' : '0'; ?>" data-mobile-button-only="<?php echo $mobile_button_only ? '1' : '0'; ?>">
+				<?php if ( ! $mobile_button_only ) : ?>
+					<h3 class="wcapf-heading"><?php esc_html_e( 'Filters', 'wc-auto-product-filters' ); ?></h3>
+				<?php endif; ?>
+					<?php if ( $mobile_button_only ) : ?>
+						<button type="button" class="button wcapf-open-mobile-filters"><span class="wcapf-filter-fab-icon" aria-hidden="true"></span><span class="wcapf-open-mobile-filters-label"><?php esc_html_e( 'Filtrovat', 'wc-auto-product-filters' ); ?></span></button>
+						<button type="button" class="button wcapf-open-mobile-filters-fab" aria-label="<?php esc_attr_e( 'Filter', 'wc-auto-product-filters' ); ?>">
+							<span class="wcapf-filter-fab-icon" aria-hidden="true"></span>
+						</button>
+					<?php endif; ?>
+				<form class="wcapf-form" method="get">
 				<?php $this->render_non_filter_query_args(); ?>
 				<div class="wcapf-fields">
 				<?php $i = 0; foreach ( $filters as $key => $filter ) : ?>
@@ -69,9 +78,9 @@ class WC_Auto_Product_Filters_Renderer {
 				<?php endif; ?>
 				<a class="wcapf-reset" href="<?php echo esc_url( $this->get_reset_url() ); ?>"><?php esc_html_e( 'Reset', 'wc-auto-product-filters' ); ?></a>
 			</form>
-			<?php if ( $sidebar_panel ) : ?>
-				<div class="wcapf-panel-overlay" hidden></div>
-				<div class="wcapf-panel" hidden>
+				<?php if ( $sidebar_panel || $mobile_button_only ) : ?>
+					<div class="wcapf-panel-overlay" hidden></div>
+					<div class="wcapf-panel" hidden>
 					<button type="button" class="button wcapf-close-panel"><?php esc_html_e( 'Close', 'wc-auto-product-filters' ); ?></button>
 					<form class="wcapf-form wcapf-panel-form" method="get">
 						<?php $this->render_non_filter_query_args(); ?>

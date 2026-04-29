@@ -23,6 +23,7 @@ function wcapf_get_global_settings() {
 		'visible_filters'    => 3,
 		'sidebar_panel_enabled' => 0,
 		'collapse_filters_enabled' => 1,
+		'mobile_button_only_enabled' => 0,
 	);
 
 	$settings = get_option( 'wcapf_global_settings', array() );

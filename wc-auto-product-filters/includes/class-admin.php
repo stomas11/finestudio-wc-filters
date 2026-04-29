@@ -168,7 +168,7 @@ class WC_Auto_Product_Filters_Admin {
 			$filters_columns_desktop = 6;
 		}
 
-		$settings = array(
+			$settings = array(
 			'ajax_enabled'       => isset( $_POST['ajax_enabled'] ) ? 1 : 0,
 			'auto_submit'        => isset( $_POST['auto_submit'] ) ? 1 : 0,
 			'update_browser_url' => isset( $_POST['update_browser_url'] ) ? 1 : 0,
@@ -179,9 +179,10 @@ class WC_Auto_Product_Filters_Admin {
 			'filters_layout'     => $filters_layout,
 			'filters_columns_desktop' => $filters_columns_desktop,
 			'visible_filters'    => $visible_filters,
-			'sidebar_panel_enabled' => isset( $_POST['sidebar_panel_enabled'] ) ? 1 : 0,
-			'collapse_filters_enabled' => isset( $_POST['collapse_filters_enabled'] ) ? 1 : 0,
-		);
+				'sidebar_panel_enabled' => isset( $_POST['sidebar_panel_enabled'] ) ? 1 : 0,
+				'collapse_filters_enabled' => isset( $_POST['collapse_filters_enabled'] ) ? 1 : 0,
+				'mobile_button_only_enabled' => isset( $_POST['mobile_button_only_enabled'] ) ? 1 : 0,
+			);
 		update_option( 'wcapf_global_settings', $settings );
 	}
 
@@ -321,8 +322,9 @@ class WC_Auto_Product_Filters_Admin {
 					</select>
 				</label></p>
 				<p><label><?php esc_html_e( 'Columns count on desktop', 'wc-auto-product-filters' ); ?> <input type="number" min="1" max="6" step="1" name="filters_columns_desktop" value="<?php echo esc_attr( (string) $settings['filters_columns_desktop'] ); ?>" /></label></p>
-				<p><label><input type="checkbox" name="sidebar_panel_enabled" value="1" <?php checked( (int) $settings['sidebar_panel_enabled'], 1 ); ?> /> <?php esc_html_e( 'Show filters in sidebar panel (desktop + mobile)', 'wc-auto-product-filters' ); ?></label></p>
-				<p><label><input type="checkbox" name="collapse_filters_enabled" value="1" <?php checked( (int) $settings['collapse_filters_enabled'], 1 ); ?> /> <?php esc_html_e( 'Collapse to first filters + Show all button', 'wc-auto-product-filters' ); ?></label></p>
+					<p><label><input type="checkbox" name="sidebar_panel_enabled" value="1" <?php checked( (int) $settings['sidebar_panel_enabled'], 1 ); ?> /> <?php esc_html_e( 'Show filters in sidebar panel (desktop + mobile)', 'wc-auto-product-filters' ); ?></label></p>
+					<p><label><input type="checkbox" name="mobile_button_only_enabled" value="1" <?php checked( (int) $settings['mobile_button_only_enabled'], 1 ); ?> /> <?php esc_html_e( 'On mobile show only "Filter" button and open filters panel on click', 'wc-auto-product-filters' ); ?></label></p>
+					<p><label><input type="checkbox" name="collapse_filters_enabled" value="1" <?php checked( (int) $settings['collapse_filters_enabled'], 1 ); ?> /> <?php esc_html_e( 'Collapse to first filters + Show all button', 'wc-auto-product-filters' ); ?></label></p>
 				<p><label><?php esc_html_e( 'Visible filters before "Show all"', 'wc-auto-product-filters' ); ?> <input type="number" min="1" step="1" name="visible_filters" value="<?php echo esc_attr( (string) $settings['visible_filters'] ); ?>" /></label></p>
 				<?php submit_button( __( 'Save settings', 'wc-auto-product-filters' ) ); ?>
 			</form>

@@ -402,6 +402,11 @@
     openPanel($wrap);
   });
 
+  $(document).on('click', '.wcapf-open-mobile-filters, .wcapf-open-mobile-filters-fab', function () {
+    var $wrap = $(this).closest('.wcapf-filters');
+    openPanel($wrap);
+  });
+
   $(function () {
     initPriceSlider(document);
     initOptionsExpand(document);
