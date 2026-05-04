@@ -121,6 +121,7 @@ $MessageIds = @(
 	'Order',
 	'Price',
 	'Price range',
+	'Primary color',
 	'Product Filters',
 	'Products container ID (without #)',
 	'Products container selector',
@@ -183,6 +184,7 @@ $Translations = @{
 		'Order' = 'Poradie'
 		'Price' = 'Cena'
 		'Price range' = (T 'Cenov&#x00FD; rozsah')
+		'Primary color' = (T 'Prim&#x00E1;rna farba')
 		'Product Filters' = 'Filtre produktov'
 		'Products container ID (without #)' = 'ID kontajnera produktov (bez #)'
 		'Products container selector' = 'Selektor kontajnera produktov'
@@ -243,6 +245,7 @@ $Translations = @{
 		'Order' = (T 'Po&#x0159;ad&#x00ED;')
 		'Price' = 'Cena'
 		'Price range' = (T 'Cenov&#x00E9; rozp&#x011B;t&#x00ED;')
+		'Primary color' = (T 'Prim&#x00E1;rn&#x00ED; barva')
 		'Product Filters' = (T 'Filtry produkt&#x016F;')
 		'Products container ID (without #)' = (T 'ID kontejneru produkt&#x016F; (bez #)')
 		'Products container selector' = (T 'Selektor kontejneru produkt&#x016F;')

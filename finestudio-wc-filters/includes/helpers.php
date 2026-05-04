@@ -32,6 +32,7 @@ function fsapf_get_global_settings() {
 		'products_selector'  => '.woocommerce ul.products',
 		'products_container_id' => '',
 		'submit_mode'        => 'auto',
+		'primary_color'      => '#3b8f76',
 		'color_attributes'   => array(),
 		'filters_layout'     => 'stacked',
 		'filters_columns_desktop' => 3,
@@ -42,7 +43,13 @@ function fsapf_get_global_settings() {
 	);
 
 	$settings = fsapf_get_option_with_legacy( 'fsapf_global_settings', 'wcapf_global_settings', array() );
-	return wp_parse_args( is_array( $settings ) ? $settings : array(), $defaults );
+	$settings = wp_parse_args( is_array( $settings ) ? $settings : array(), $defaults );
+	$settings['primary_color'] = sanitize_hex_color( $settings['primary_color'] ?? '' );
+	if ( ! $settings['primary_color'] ) {
+		$settings['primary_color'] = $defaults['primary_color'];
+	}
+
+	return $settings;
 }
 
 function fsapf_get_filter_settings() {

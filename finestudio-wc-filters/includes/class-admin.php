@@ -182,21 +182,27 @@ class WC_Auto_Product_Filters_Admin {
 			$filters_columns_desktop = 6;
 		}
 
-			$settings = array(
+		$primary_color = sanitize_hex_color( wp_unslash( $_POST['primary_color'] ?? '' ) );
+		if ( ! $primary_color ) {
+			$primary_color = '#3b8f76';
+		}
+
+		$settings = array(
 			'ajax_enabled'       => isset( $_POST['ajax_enabled'] ) ? 1 : 0,
 			'auto_submit'        => isset( $_POST['auto_submit'] ) ? 1 : 0,
 			'update_browser_url' => isset( $_POST['update_browser_url'] ) ? 1 : 0,
 			'products_selector'  => sanitize_text_field( wp_unslash( $_POST['products_selector'] ?? '.woocommerce ul.products' ) ),
 			'products_container_id' => sanitize_key( wp_unslash( $_POST['products_container_id'] ?? '' ) ),
 			'submit_mode'        => $submit_mode,
+			'primary_color'      => $primary_color,
 			'color_attributes'   => array_values( array_unique( $color_attributes ) ),
 			'filters_layout'     => $filters_layout,
 			'filters_columns_desktop' => $filters_columns_desktop,
 			'visible_filters'    => $visible_filters,
-				'sidebar_panel_enabled' => isset( $_POST['sidebar_panel_enabled'] ) ? 1 : 0,
-				'collapse_filters_enabled' => isset( $_POST['collapse_filters_enabled'] ) ? 1 : 0,
-				'mobile_button_only_enabled' => isset( $_POST['mobile_button_only_enabled'] ) ? 1 : 0,
-			);
+			'sidebar_panel_enabled' => isset( $_POST['sidebar_panel_enabled'] ) ? 1 : 0,
+			'collapse_filters_enabled' => isset( $_POST['collapse_filters_enabled'] ) ? 1 : 0,
+			'mobile_button_only_enabled' => isset( $_POST['mobile_button_only_enabled'] ) ? 1 : 0,
+		);
 		update_option( 'fsapf_global_settings', $settings );
 	}
 
@@ -327,6 +333,7 @@ class WC_Auto_Product_Filters_Admin {
 						<option value="button" <?php selected( $settings['submit_mode'], 'button' ); ?>><?php esc_html_e( 'Button only', 'finestudio-wc-filters' ); ?></option>
 					</select>
 				</label></p>
+				<p><label><?php esc_html_e( 'Primary color', 'finestudio-wc-filters' ); ?> <input type="color" name="primary_color" value="<?php echo esc_attr( $settings['primary_color'] ); ?>" /></label></p>
 				<p><label><?php esc_html_e( 'Products container selector', 'finestudio-wc-filters' ); ?> <input type="text" name="products_selector" value="<?php echo esc_attr( $settings['products_selector'] ); ?>" /></label></p>
 				<p><label><?php esc_html_e( 'Products container ID (without #)', 'finestudio-wc-filters' ); ?> <input type="text" name="products_container_id" value="<?php echo esc_attr( $settings['products_container_id'] ); ?>" placeholder="products-list" /></label></p>
 				<p><label><?php esc_html_e( 'Color attributes (taxonomy keys, comma separated)', 'finestudio-wc-filters' ); ?> <input type="text" name="color_attributes" value="<?php echo esc_attr( $color_attributes_value ); ?>" placeholder="pa_color,pa_colour" /></label></p>

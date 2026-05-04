@@ -40,9 +40,10 @@ class WC_Auto_Product_Filters_Plugin {
 		$css_ver  = file_exists( $css_file ) ? (string) filemtime( $css_file ) : FSAPF_VERSION;
 		$js_ver   = file_exists( $js_file ) ? (string) filemtime( $js_file ) : FSAPF_VERSION;
 
-		wp_enqueue_style( 'wcapf-frontend', FSAPF_URL . 'assets/css/frontend.css', array(), $css_ver );
-
 		$settings = fsapf_get_global_settings();
+		wp_enqueue_style( 'wcapf-frontend', FSAPF_URL . 'assets/css/frontend.css', array(), $css_ver );
+		wp_add_inline_style( 'wcapf-frontend', '.wcapf-filters{--wcapf-primary:' . esc_html( $settings['primary_color'] ) . ';}' );
+
 		wp_enqueue_script( 'wcapf-frontend', FSAPF_URL . 'assets/js/frontend.js', array( 'jquery' ), $js_ver, true );
 		wp_localize_script(
 			'wcapf-frontend',

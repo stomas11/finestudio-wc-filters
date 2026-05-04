@@ -167,6 +167,10 @@ msgstr ""
 msgid "Price range"
 msgstr ""
 
+#: includes/class-admin.php:336
+msgid "Primary color"
+msgstr ""
+
 #: includes/class-admin.php:20 includes/class-admin.php:210
 msgid "Product Filters"
 msgstr ""

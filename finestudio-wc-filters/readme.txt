@@ -104,6 +104,7 @@ Optional attributes:
 - auto submit
 - update browser URL
 - submit mode (`auto` / `button`)
+- primary color
 - products selector / container ID
 - color attributes list
 - filters layout and desktop columns
