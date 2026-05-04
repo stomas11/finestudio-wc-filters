@@ -1,0 +1,189 @@
+msgid ""
+msgstr ""
+"Project-Id-Version: Finestudio WC Filters\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2026-05-04 09:59+0000\n"
+"PO-Revision-Date: 2026-05-04 12:09+02:00\n"
+"Last-Translator: Fine Studio\n"
+"Language-Team: Slovak\n"
+"Language: sk_SK\n"
+"Plural-Forms: nplurals=3; plural=( n == 1 ) ? 0 : ( n >= 2 && n <= 4 ) ? 1 : 2;\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"X-Generator: tools/update-translations.ps1\n"
+"X-Domain: finestudio-wc-filters\n"
+
+msgid "Any"
+msgstr "Ľubovoľné"
+
+msgid "Attribute Colors"
+msgstr "Farby atribútov"
+
+msgid "Auto submit on change"
+msgstr "Automaticky odoslať pri zmene"
+
+msgid "Auto-generated WooCommerce product filters with per-category context and admin controls."
+msgstr "Automaticky generované filtre produktov WooCommerce s kontextom podľa kategórie a nastaveniami v administrácii."
+
+msgid "Automatic"
+msgstr "Automaticky"
+
+msgid "Availability"
+msgstr "Dostupnosť"
+
+msgid "Button only"
+msgstr "Len tlačidlo"
+
+msgid "Category Overrides"
+msgstr "Nastavenia pre kategórie"
+
+msgid "Checkbox"
+msgstr "Zaškrtávacie políčko"
+
+msgid "Close"
+msgstr "Zavrieť"
+
+msgid "Collapse to first filters + Show all button"
+msgstr "Zbaliť na prvé filtre + tlačidlo \"Zobraziť všetko\""
+
+msgid "Color attributes (taxonomy keys, comma separated)"
+msgstr "Farebné atribúty (kľúče taxonómií oddelené čiarkou)"
+
+msgid "Columns count on desktop"
+msgstr "Počet stĺpcov na desktope"
+
+msgid "Columns on desktop"
+msgstr "Stĺpce na desktope"
+
+msgid "Default"
+msgstr "Predvolené"
+
+msgid "Enable AJAX filtering"
+msgstr "Povoliť AJAX filtrovanie"
+
+msgid "Enabled"
+msgstr "Povolené"
+
+msgid "Filter"
+msgstr "Filter"
+
+msgid "Filter Overview"
+msgstr "Prehľad filtrov"
+
+msgid "Filters"
+msgstr "Filtre"
+
+msgid "Filters layout"
+msgstr "Rozloženie filtrov"
+
+msgid "Fine Studio"
+msgstr "Fine Studio"
+
+msgid "Finestudio WC Filters"
+msgstr "Finestudio WC Filters"
+
+msgid "Hidden filter keys (comma separated)"
+msgstr "Skryté kľúče filtrov (oddelené čiarkou)"
+
+msgid "In stock only"
+msgstr "Iba skladom"
+
+msgid "Label"
+msgstr "Názov"
+
+msgid "Max"
+msgstr "Max"
+
+msgid "Min"
+msgstr "Min"
+
+msgid "Multi-select"
+msgstr "Viacnásobný výber"
+
+msgid "No color attributes configured. Set them in Settings -> Color attributes (taxonomy keys, comma separated)."
+msgstr "Nie sú nastavené žiadne farebné atribúty. Nastavíte ich v časti Nastavenia -> Farebné atribúty (kľúče taxonómií oddelené čiarkou)."
+
+msgid "On mobile show only \"Filter\" button and open filters panel on click"
+msgstr "Na mobile zobraziť iba tlačidlo \"Filter\" a po kliknutí otvoriť panel filtrov"
+
+msgid "On sale"
+msgstr "V akcii"
+
+msgid "On sale only"
+msgstr "Iba v akcii"
+
+msgid "Order"
+msgstr "Poradie"
+
+msgid "Price"
+msgstr "Cena"
+
+msgid "Price range"
+msgstr "Cenový rozsah"
+
+msgid "Product Filters"
+msgstr "Filtre produktov"
+
+msgid "Products container ID (without #)"
+msgstr "ID kontajnera produktov (bez #)"
+
+msgid "Products container selector"
+msgstr "Selektor kontajnera produktov"
+
+msgid "Radio"
+msgstr "Prepínač"
+
+msgid "Reset"
+msgstr "Resetovať"
+
+msgid "Save colors"
+msgstr "Uložiť farby"
+
+msgid "Save filters"
+msgstr "Uložiť filtre"
+
+msgid "Save settings"
+msgstr "Uložiť nastavenia"
+
+msgid "Select dropdown"
+msgstr "Rozbaľovací zoznam"
+
+msgid "Settings"
+msgstr "Nastavenia"
+
+msgid "Show all filters"
+msgstr "Zobraziť všetky filtre"
+
+msgid "Show filters in sidebar panel (desktop + mobile)"
+msgstr "Zobraziť filtre v bočnom paneli (desktop + mobil)"
+
+msgid "Show more options"
+msgstr "Zobraziť viac možností"
+
+msgid "Show results"
+msgstr "Zobraziť výsledky"
+
+msgid "Showing %d results"
+msgstr "Počet výsledkov: %d"
+
+msgid "Showing 1 result"
+msgstr "Počet výsledkov: 1"
+
+msgid "Stacked"
+msgstr "Pod sebou"
+
+msgid "Submit mode"
+msgstr "Režim odosielania"
+
+msgid "Swatches"
+msgstr "Vzorky"
+
+msgid "Type"
+msgstr "Typ"
+
+msgid "Update browser URL"
+msgstr "Aktualizovať URL v prehliadači"
+
+msgid "Visible filters before \"Show all\""
+msgstr "Počet filtrov pred tlačidlom \"Zobraziť všetko\""

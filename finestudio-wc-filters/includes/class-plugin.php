@@ -56,6 +56,12 @@ class WC_Auto_Product_Filters_Plugin {
 				'productsSelector'=> $settings['products_selector'],
 				'productsContainerId' => $settings['products_container_id'],
 				'submitMode'      => $settings['submit_mode'],
+				'strings'         => array(
+					'showMoreOptions'  => __( 'Show more options', 'finestudio-wc-filters' ),
+					'showingOneResult' => __( 'Showing 1 result', 'finestudio-wc-filters' ),
+					'showingResults'   => __( 'Showing %d results', 'finestudio-wc-filters' ),
+					'showAllFilters'   => __( 'Show all filters', 'finestudio-wc-filters' ),
+				),
 			)
 		);
 	}

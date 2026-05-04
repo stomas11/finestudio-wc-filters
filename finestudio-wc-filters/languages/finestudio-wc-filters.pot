@@ -1,0 +1,256 @@
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: Finestudio WC Filters\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2026-05-04 09:59+0000\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: \n"
+"Language: \n"
+"Plural-Forms: nplurals=INTEGER; plural=EXPRESSION;\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"X-Generator: Loco https://localise.biz/\n"
+"X-Loco-Version: 2.8.4; wp-6.9.4; php-8.1.33\n"
+"X-Domain: finestudio-wc-filters"
+
+#: includes/class-filter-renderer.php:199
+#: includes/class-filter-renderer.php:208
+msgid "Any"
+msgstr ""
+
+#: includes/class-admin.php:22 includes/class-admin.php:283
+msgid "Attribute Colors"
+msgstr ""
+
+#: includes/class-admin.php:319
+msgid "Auto submit on change"
+msgstr ""
+
+#. Description of the plugin
+msgid ""
+"Auto-generated WooCommerce product filters with per-category context and "
+"admin controls."
+msgstr ""
+
+#: includes/class-admin.php:323
+msgid "Automatic"
+msgstr ""
+
+#: includes/class-filter-discovery.php:78
+msgid "Availability"
+msgstr ""
+
+#: includes/class-admin.php:324
+msgid "Button only"
+msgstr ""
+
+#: includes/class-admin.php:237
+msgid "Category Overrides"
+msgstr ""
+
+#: includes/class-admin.php:38
+msgid "Checkbox"
+msgstr ""
+
+#: includes/class-filter-renderer.php:84
+msgid "Close"
+msgstr ""
+
+#: includes/class-admin.php:339
+msgid "Collapse to first filters + Show all button"
+msgstr ""
+
+#: includes/class-admin.php:329
+msgid "Color attributes (taxonomy keys, comma separated)"
+msgstr ""
+
+#: includes/class-admin.php:336
+msgid "Columns count on desktop"
+msgstr ""
+
+#: includes/class-admin.php:333
+msgid "Columns on desktop"
+msgstr ""
+
+#: includes/class-admin.php:259
+msgid "Default"
+msgstr ""
+
+#: includes/class-admin.php:318
+msgid "Enable AJAX filtering"
+msgstr ""
+
+#: includes/class-admin.php:215 includes/class-admin.php:247
+msgid "Enabled"
+msgstr ""
+
+#: includes/class-admin.php:215 includes/class-admin.php:247
+#: includes/class-filter-renderer.php:53 includes/class-filter-renderer.php:54
+#: includes/class-filter-renderer.php:77
+msgid "Filter"
+msgstr ""
+
+#: includes/class-admin.php:21
+msgid "Filter Overview"
+msgstr ""
+
+#: includes/class-filter-renderer.php:50
+msgid "Filters"
+msgstr ""
+
+#: includes/class-admin.php:330
+msgid "Filters layout"
+msgstr ""
+
+#. Author of the plugin
+msgid "Fine Studio"
+msgstr ""
+
+#. Name of the plugin
+msgid "Finestudio WC Filters"
+msgstr ""
+
+#: includes/class-admin.php:243
+msgid "Hidden filter keys (comma separated)"
+msgstr ""
+
+#: includes/class-filter-renderer.php:150
+msgid "In stock only"
+msgstr ""
+
+#: includes/class-admin.php:215 includes/class-admin.php:247
+msgid "Label"
+msgstr ""
+
+#: includes/class-filter-renderer.php:135
+msgid "Max"
+msgstr ""
+
+#: includes/class-filter-renderer.php:130
+msgid "Min"
+msgstr ""
+
+#: includes/class-admin.php:41
+msgid "Multi-select"
+msgstr ""
+
+#: includes/class-admin.php:285
+msgid ""
+"No color attributes configured. Set them in Settings -> Color attributes "
+"(taxonomy keys, comma separated)."
+msgstr ""
+
+#: includes/class-admin.php:338
+msgid "On mobile show only \"Filter\" button and open filters panel on click"
+msgstr ""
+
+#: includes/class-filter-discovery.php:84
+msgid "On sale"
+msgstr ""
+
+#: includes/class-filter-renderer.php:156
+msgid "On sale only"
+msgstr ""
+
+#: includes/class-admin.php:215 includes/class-admin.php:247
+msgid "Order"
+msgstr ""
+
+#: includes/class-filter-discovery.php:72
+msgid "Price"
+msgstr ""
+
+#: includes/class-admin.php:42
+msgid "Price range"
+msgstr ""
+
+#: includes/class-admin.php:20 includes/class-admin.php:210
+msgid "Product Filters"
+msgstr ""
+
+#: includes/class-admin.php:328
+msgid "Products container ID (without #)"
+msgstr ""
+
+#: includes/class-admin.php:327
+msgid "Products container selector"
+msgstr ""
+
+#: includes/class-admin.php:39
+msgid "Radio"
+msgstr ""
+
+#: includes/class-filter-renderer.php:79 includes/class-filter-renderer.php:101
+msgid "Reset"
+msgstr ""
+
+#: includes/class-admin.php:303
+msgid "Save colors"
+msgstr ""
+
+#: includes/class-admin.php:272
+msgid "Save filters"
+msgstr ""
+
+#: includes/class-admin.php:341
+msgid "Save settings"
+msgstr ""
+
+#: includes/class-admin.php:40
+msgid "Select dropdown"
+msgstr ""
+
+#: includes/class-admin.php:23 includes/class-admin.php:314
+msgid "Settings"
+msgstr ""
+
+#: includes/class-plugin.php:63 includes/class-filter-renderer.php:74
+msgid "Show all filters"
+msgstr ""
+
+#: includes/class-admin.php:337
+msgid "Show filters in sidebar panel (desktop + mobile)"
+msgstr ""
+
+#: includes/class-plugin.php:60
+msgid "Show more options"
+msgstr ""
+
+#: includes/class-filter-renderer.php:100
+msgid "Show results"
+msgstr ""
+
+#: includes/class-plugin.php:62
+msgid "Showing %d results"
+msgstr ""
+
+#: includes/class-plugin.php:61
+msgid "Showing 1 result"
+msgstr ""
+
+#: includes/class-admin.php:332
+msgid "Stacked"
+msgstr ""
+
+#: includes/class-admin.php:321
+msgid "Submit mode"
+msgstr ""
+
+#: includes/class-admin.php:43
+msgid "Swatches"
+msgstr ""
+
+#: includes/class-admin.php:215 includes/class-admin.php:247
+msgid "Type"
+msgstr ""
+
+#: includes/class-admin.php:320
+msgid "Update browser URL"
+msgstr ""
+
+#: includes/class-admin.php:340
+msgid "Visible filters before \"Show all\""
+msgstr ""

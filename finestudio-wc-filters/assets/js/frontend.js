@@ -4,6 +4,13 @@
     return parseInt(window.wcapfData.ajaxEnabled, 10) === 1;
   }
 
+  function getString(key, fallback) {
+    if (window.wcapfData && wcapfData.strings && typeof wcapfData.strings[key] === 'string' && wcapfData.strings[key] !== '') {
+      return wcapfData.strings[key];
+    }
+    return fallback;
+  }
+
   function initPriceSlider(scope) {
     $(scope).find('.wcapf-price-slider').each(function () {
       var $wrap = $(this);
@@ -96,7 +103,7 @@
       if ($labels.length <= visibleCount) return;
 
       $labels.slice(visibleCount).addClass('wcapf-option-hidden');
-      var $btn = $('<button type="button" class="wcapf-options-more">Show more options</button>');
+      var $btn = $('<button type="button" class="wcapf-options-more"></button>').text(getString('showMoreOptions', 'Show more options'));
       $btn.on('click', function () {
         $labels.removeClass('wcapf-option-hidden');
         $btn.remove();
@@ -271,8 +278,8 @@
     if (!$results.length) return;
 
     var text = renderedCount === 1
-      ? 'Showing 1 result'
-      : ('Showing ' + renderedCount + ' results');
+      ? getString('showingOneResult', 'Showing 1 result')
+      : getString('showingResults', 'Showing %d results').replace('%d', renderedCount).replace('%s', renderedCount);
 
     $results.each(function () {
       $(this).text(text);
@@ -327,7 +334,9 @@
       $wrap.removeClass('wcapf-mobile-expanded');
 
       if ($fields.length > 1 && !$form.children('.wcapf-show-all').length) {
-        $('<button type="button" class="button wcapf-show-all wcapf-mobile-show-all">Show all filters</button>').insertAfter($form.find('.wcapf-fields'));
+        $('<button type="button" class="button wcapf-show-all wcapf-mobile-show-all"></button>')
+          .text(getString('showAllFilters', 'Show all filters'))
+          .insertAfter($form.find('.wcapf-fields'));
       }
     });
   }

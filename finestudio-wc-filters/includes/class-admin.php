@@ -33,6 +33,17 @@ class WC_Auto_Product_Filters_Admin {
 		wp_enqueue_script( 'wcapf-admin', FSAPF_URL . 'assets/js/admin.js', array( 'jquery', 'jquery-ui-sortable' ), FSAPF_VERSION, true );
 	}
 
+	private function get_display_type_labels() {
+		return array(
+			'checkbox'    => __( 'Checkbox', 'finestudio-wc-filters' ),
+			'radio'       => __( 'Radio', 'finestudio-wc-filters' ),
+			'select'      => __( 'Select dropdown', 'finestudio-wc-filters' ),
+			'multiselect' => __( 'Multi-select', 'finestudio-wc-filters' ),
+			'range'       => __( 'Price range', 'finestudio-wc-filters' ),
+			'swatches'    => __( 'Swatches', 'finestudio-wc-filters' ),
+		);
+	}
+
 	public function handle_save() {
 		if ( empty( $_POST['fsapf_action'] ) || ! current_user_can( 'manage_woocommerce' ) ) {
 			return;
@@ -192,7 +203,8 @@ class WC_Auto_Product_Filters_Admin {
 		$cats     = get_terms( array( 'taxonomy' => 'product_cat', 'hide_empty' => false ) );
 		$override = fsapf_get_category_overrides();
 		$saved    = fsapf_get_filter_settings();
-		$types    = array( 'checkbox', 'radio', 'select', 'multiselect', 'range', 'swatches' );
+		$type_labels = $this->get_display_type_labels();
+		$types       = array_keys( $type_labels );
 		?>
 		<div class="wrap">
 			<h1><?php esc_html_e( 'Product Filters', 'finestudio-wc-filters' ); ?></h1>
@@ -211,9 +223,9 @@ class WC_Auto_Product_Filters_Admin {
 								<td><input type="checkbox" name="filters[<?php echo esc_attr( $key ); ?>][enabled]" value="1" <?php checked( isset( $saved[ $key ]['enabled'] ) ? (int) $saved[ $key ]['enabled'] : 1, 1 ); ?> /></td>
 								<td><input type="text" name="filters[<?php echo esc_attr( $key ); ?>][label]" value="<?php echo esc_attr( $saved[ $key ]['label'] ?? $filter['label'] ); ?>" /></td>
 								<td>
-									<select name="filters[<?php echo esc_attr( $key ); ?>][display_type]">
+										<select name="filters[<?php echo esc_attr( $key ); ?>][display_type]">
 										<?php foreach ( $types as $type ) : ?>
-											<option value="<?php echo esc_attr( $type ); ?>" <?php selected( $display_type, $type ); ?>><?php echo esc_html( $type ); ?></option>
+											<option value="<?php echo esc_attr( $type ); ?>" <?php selected( $display_type, $type ); ?>><?php echo esc_html( $type_labels[ $type ] ?? $type ); ?></option>
 										<?php endforeach; ?>
 									</select>
 								</td>
@@ -246,7 +258,7 @@ class WC_Auto_Product_Filters_Admin {
 										<select name="overrides[<?php echo esc_attr( (string) $cat->term_id ); ?>][display_type][<?php echo esc_attr( $key ); ?>]">
 											<option value=""><?php esc_html_e( 'Default', 'finestudio-wc-filters' ); ?></option>
 											<?php foreach ( $types as $type ) : ?>
-												<option value="<?php echo esc_attr( $type ); ?>" <?php selected( $cat_override['display_type'][ $key ] ?? '', $type ); ?>><?php echo esc_html( $type ); ?></option>
+												<option value="<?php echo esc_attr( $type ); ?>" <?php selected( $cat_override['display_type'][ $key ] ?? '', $type ); ?>><?php echo esc_html( $type_labels[ $type ] ?? $type ); ?></option>
 											<?php endforeach; ?>
 										</select>
 									</td>
@@ -314,7 +326,7 @@ class WC_Auto_Product_Filters_Admin {
 				</label></p>
 				<p><label><?php esc_html_e( 'Products container selector', 'finestudio-wc-filters' ); ?> <input type="text" name="products_selector" value="<?php echo esc_attr( $settings['products_selector'] ); ?>" /></label></p>
 				<p><label><?php esc_html_e( 'Products container ID (without #)', 'finestudio-wc-filters' ); ?> <input type="text" name="products_container_id" value="<?php echo esc_attr( $settings['products_container_id'] ); ?>" placeholder="products-list" /></label></p>
-				<p><label><?php esc_html_e( 'Color attributes (taxonomy keys, comma separated)', 'finestudio-wc-filters' ); ?> <input type="text" name="color_attributes" value="<?php echo esc_attr( $color_attributes_value ); ?>" placeholder="pa_farba,pa_color" /></label></p>
+				<p><label><?php esc_html_e( 'Color attributes (taxonomy keys, comma separated)', 'finestudio-wc-filters' ); ?> <input type="text" name="color_attributes" value="<?php echo esc_attr( $color_attributes_value ); ?>" placeholder="pa_color,pa_colour" /></label></p>
 				<p><label><?php esc_html_e( 'Filters layout', 'finestudio-wc-filters' ); ?>
 					<select name="filters_layout">
 						<option value="stacked" <?php selected( $settings['filters_layout'], 'stacked' ); ?>><?php esc_html_e( 'Stacked', 'finestudio-wc-filters' ); ?></option>
