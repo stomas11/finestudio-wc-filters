@@ -170,6 +170,9 @@ class WC_Auto_Product_Filters_Discovery {
 
 			if ( ! empty( $filter_settings['label'] ) ) {
 				$filters[ $key ]['label'] = $filter_settings['label'];
+				if ( ! $keep_disabled ) {
+					$filters[ $key ]['label'] = WC_Auto_Product_Filters_WPML::translate_filter_label( $key, $filters[ $key ]['label'] );
+				}
 			}
 
 			if ( ! empty( $filter_settings['display_type'] ) ) {
@@ -224,6 +227,7 @@ class WC_Auto_Product_Filters_Discovery {
 				$key = sanitize_key( $key );
 				if ( isset( $filters[ $key ] ) && '' !== trim( (string) $label ) ) {
 					$filters[ $key ]['label'] = sanitize_text_field( $label );
+					$filters[ $key ]['label'] = WC_Auto_Product_Filters_WPML::translate_category_filter_label( $category_id, $override, $key, $filters[ $key ]['label'] );
 				}
 			}
 		}

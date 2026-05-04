@@ -182,11 +182,14 @@
     var $price = $form.find('.wcapf-price-slider').first();
     var priceDefaultMin = $price.length ? parseFloat($price.data('min')) : null;
     var priceDefaultMax = $price.length ? parseFloat($price.data('max')) : null;
+    var priceCurrency = $price.length ? String($price.data('currency') || '') : '';
+    var priceChanged = false;
 
     $form.find('[name]').each(function () {
       var $el = $(this);
       var name = $el.attr('name');
       if (!name) return;
+      if (name === 'wcapf_price_currency') return;
       if (name === 'paged' || name === 'product-page') return;
 
       var isFilter = name.indexOf('filter_') === 0;
@@ -217,12 +220,17 @@
         if (name === 'filter_min_price' && priceDefaultMin !== null && num === priceDefaultMin) return;
         if (name === 'filter_max_price' && priceDefaultMax !== null && num === priceDefaultMax) return;
         params.append(name, String(num));
+        priceChanged = true;
         return;
       }
 
       if (String(value || '').trim() === '') return;
       params.append(name, value);
     });
+
+    if (priceChanged && priceCurrency !== '') {
+      params.append('wcapf_price_currency', priceCurrency);
+    }
 
     return params.toString();
   }

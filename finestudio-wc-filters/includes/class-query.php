@@ -31,12 +31,10 @@ class WC_Auto_Product_Filters_Query {
 		$meta_query = (array) $query->get( 'meta_query', array() );
 
 		if ( $this->should_apply_price_filter() ) {
-			$bounds = $this->get_price_bounds();
-			$min = isset( $_GET['filter_min_price'] ) && '' !== $_GET['filter_min_price'] ? (float) wc_clean( wp_unslash( $_GET['filter_min_price'] ) ) : (float) $bounds['min'];
-			$max = isset( $_GET['filter_max_price'] ) && '' !== $_GET['filter_max_price'] ? (float) wc_clean( wp_unslash( $_GET['filter_max_price'] ) ) : (float) $bounds['max'];
+			$range = $this->get_requested_price_range();
 			$meta_query[] = array(
 				'key'     => '_price',
-				'value'   => array( $min, $max ),
+				'value'   => array( $range['min'], $range['max'] ),
 				'compare' => 'BETWEEN',
 				'type'    => 'NUMERIC',
 			);
@@ -154,12 +152,10 @@ class WC_Auto_Product_Filters_Query {
 		}
 
 		if ( $this->should_apply_price_filter() ) {
-			$bounds = $this->get_price_bounds();
-			$min = isset( $_GET['filter_min_price'] ) && '' !== $_GET['filter_min_price'] ? (float) wc_clean( wp_unslash( $_GET['filter_min_price'] ) ) : (float) $bounds['min'];
-			$max = isset( $_GET['filter_max_price'] ) && '' !== $_GET['filter_max_price'] ? (float) wc_clean( wp_unslash( $_GET['filter_max_price'] ) ) : (float) $bounds['max'];
+			$range = $this->get_requested_price_range();
 			$meta_query[] = array(
 				'key'     => '_price',
-				'value'   => array( $min, $max ),
+				'value'   => array( $range['min'], $range['max'] ),
 				'compare' => 'BETWEEN',
 				'type'    => 'NUMERIC',
 			);
@@ -223,12 +219,10 @@ class WC_Auto_Product_Filters_Query {
 		$meta_query = isset( $query_args['meta_query'] ) && is_array( $query_args['meta_query'] ) ? $query_args['meta_query'] : array();
 
 		if ( $this->should_apply_price_filter() ) {
-			$bounds = $this->get_price_bounds();
-			$min = isset( $_GET['filter_min_price'] ) && '' !== $_GET['filter_min_price'] ? (float) wc_clean( wp_unslash( $_GET['filter_min_price'] ) ) : (float) $bounds['min'];
-			$max = isset( $_GET['filter_max_price'] ) && '' !== $_GET['filter_max_price'] ? (float) wc_clean( wp_unslash( $_GET['filter_max_price'] ) ) : (float) $bounds['max'];
+			$range = $this->get_requested_price_range();
 			$meta_query[] = array(
 				'key'     => '_price',
-				'value'   => array( $min, $max ),
+				'value'   => array( $range['min'], $range['max'] ),
 				'compare' => 'BETWEEN',
 				'type'    => 'NUMERIC',
 			);
@@ -369,11 +363,45 @@ class WC_Auto_Product_Filters_Query {
 			return false;
 		}
 
-		$bounds = $this->get_price_bounds();
-		$min = isset( $_GET['filter_min_price'] ) && '' !== $_GET['filter_min_price'] ? (float) wc_clean( wp_unslash( $_GET['filter_min_price'] ) ) : (float) $bounds['min'];
-		$max = isset( $_GET['filter_max_price'] ) && '' !== $_GET['filter_max_price'] ? (float) wc_clean( wp_unslash( $_GET['filter_max_price'] ) ) : (float) $bounds['max'];
+		$range = $this->get_requested_price_range();
 
-		return ( $min > (float) $bounds['min'] ) || ( $max < (float) $bounds['max'] );
+		return ( $range['display_min'] > (float) $range['display_bounds']['min'] ) || ( $range['display_max'] < (float) $range['display_bounds']['max'] );
+	}
+
+	private function get_requested_price_range() {
+		$bounds           = $this->get_price_bounds();
+		$request_currency = fsapf_get_submitted_price_filter_currency( fsapf_get_price_filter_currency() );
+		$display_bounds   = fsapf_get_price_display_bounds( $bounds, $request_currency );
+		$display_min      = $this->get_price_request_amount( 'filter_min_price', (float) $display_bounds['min'] );
+		$display_max      = $this->get_price_request_amount( 'filter_max_price', (float) $display_bounds['max'] );
+
+		$min = $display_min <= (float) $display_bounds['min'] ? (float) $bounds['min'] : fsapf_price_to_database_currency( $display_min, $request_currency );
+		$max = $display_max >= (float) $display_bounds['max'] ? (float) $bounds['max'] : fsapf_price_to_database_currency( $display_max, $request_currency );
+
+		if ( $max < $min ) {
+			$max = $min;
+		}
+
+		return array(
+			'min'            => $min,
+			'max'            => $max,
+			'display_min'    => $display_min,
+			'display_max'    => $display_max,
+			'display_bounds' => $display_bounds,
+		);
+	}
+
+	private function get_price_request_amount( $key, $default ) {
+		if ( ! isset( $_GET[ $key ] ) || '' === $_GET[ $key ] || is_array( $_GET[ $key ] ) ) {
+			return (float) $default;
+		}
+
+		$value = wc_clean( wp_unslash( $_GET[ $key ] ) );
+		if ( function_exists( 'wc_format_decimal' ) ) {
+			$value = wc_format_decimal( $value );
+		}
+
+		return (float) $value;
 	}
 
 	private function get_price_bounds() {

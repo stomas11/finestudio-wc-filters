@@ -28,6 +28,8 @@ class WC_Auto_Product_Filters_Admin {
 			return;
 		}
 
+		WC_Auto_Product_Filters_WPML::register_filter_label_strings();
+
 		wp_enqueue_style( 'wcapf-admin', FSAPF_URL . 'assets/css/admin.css', array(), FSAPF_VERSION );
 		wp_enqueue_script( 'jquery-ui-sortable' );
 		wp_enqueue_script( 'wcapf-admin', FSAPF_URL . 'assets/js/admin.js', array( 'jquery', 'jquery-ui-sortable' ), FSAPF_VERSION, true );
@@ -129,6 +131,7 @@ class WC_Auto_Product_Filters_Admin {
 		}
 
 		update_option( 'fsapf_category_overrides', $overrides );
+		WC_Auto_Product_Filters_WPML::register_filter_label_strings();
 	}
 
 	private function save_color_settings() {

@@ -116,6 +116,130 @@ function fsapf_get_context_category_id( $category_id ) {
 	return (int) $translated;
 }
 
+function fsapf_get_price_filter_currency() {
+	$currency = function_exists( 'get_woocommerce_currency' ) ? get_woocommerce_currency() : get_option( 'woocommerce_currency', '' );
+	$currency = apply_filters( 'wcml_price_currency', $currency );
+	$currency = is_string( $currency ) ? strtoupper( sanitize_text_field( $currency ) ) : '';
+
+	if ( '' === $currency ) {
+		$currency = function_exists( 'get_woocommerce_currency' ) ? get_woocommerce_currency() : get_option( 'woocommerce_currency', '' );
+		$currency = is_string( $currency ) ? strtoupper( sanitize_text_field( $currency ) ) : '';
+	}
+
+	return $currency;
+}
+
+function fsapf_get_price_filter_currency_symbol( $currency = '' ) {
+	$currency = '' !== $currency ? $currency : fsapf_get_price_filter_currency();
+
+	if ( function_exists( 'get_woocommerce_currency_symbol' ) ) {
+		return get_woocommerce_currency_symbol( $currency );
+	}
+
+	return $currency;
+}
+
+function fsapf_get_submitted_price_filter_currency( $fallback = '' ) {
+	$currency = '' !== $fallback ? strtoupper( sanitize_text_field( $fallback ) ) : fsapf_get_price_filter_currency();
+
+	if ( isset( $_GET['wcapf_price_currency'] ) && ! is_array( $_GET['wcapf_price_currency'] ) ) {
+		$submitted_currency = strtoupper( sanitize_text_field( wp_unslash( $_GET['wcapf_price_currency'] ) ) );
+		if ( '' !== $submitted_currency ) {
+			$currency = $submitted_currency;
+		}
+	}
+
+	return $currency;
+}
+
+function fsapf_get_wcml_multi_currency() {
+	global $woocommerce_wpml;
+
+	if ( isset( $woocommerce_wpml->multi_currency ) && is_object( $woocommerce_wpml->multi_currency ) ) {
+		return $woocommerce_wpml->multi_currency;
+	}
+
+	if ( function_exists( 'WPML\\Container\\make' ) && class_exists( 'WCML_Multi_Currency' ) ) {
+		try {
+			$multi_currency = \WPML\Container\make( 'WCML_Multi_Currency' );
+			if ( is_object( $multi_currency ) ) {
+				return $multi_currency;
+			}
+		} catch ( Exception $e ) {
+			return null;
+		}
+	}
+
+	return null;
+}
+
+function fsapf_get_price_filter_default_currency() {
+	$currency       = get_option( 'woocommerce_currency', '' );
+	$multi_currency = fsapf_get_wcml_multi_currency();
+
+	if ( is_object( $multi_currency ) && is_callable( array( $multi_currency, 'get_default_currency' ) ) ) {
+		$default_currency = $multi_currency->get_default_currency();
+		if ( is_string( $default_currency ) && '' !== $default_currency ) {
+			$currency = $default_currency;
+		}
+	}
+
+	return is_string( $currency ) ? strtoupper( sanitize_text_field( $currency ) ) : '';
+}
+
+function fsapf_price_to_display_currency( $price, $currency = '' ) {
+	$price    = (float) $price;
+	$currency = '' !== $currency ? $currency : fsapf_get_price_filter_currency();
+
+	$converted = apply_filters( 'wcml_raw_price_amount', $price, $currency );
+	if ( is_numeric( $converted ) ) {
+		return (float) $converted;
+	}
+
+	return $price;
+}
+
+function fsapf_price_to_database_currency( $price, $currency = '' ) {
+	$price            = (float) $price;
+	$currency         = '' !== $currency ? strtoupper( sanitize_text_field( $currency ) ) : fsapf_get_price_filter_currency();
+	$default_currency = fsapf_get_price_filter_default_currency();
+
+	if ( '' !== $currency && '' !== $default_currency && $currency === $default_currency ) {
+		return $price;
+	}
+
+	$multi_currency = fsapf_get_wcml_multi_currency();
+	if ( is_object( $multi_currency ) && isset( $multi_currency->prices ) && is_object( $multi_currency->prices ) && is_callable( array( $multi_currency->prices, 'unconvert_price_amount' ) ) ) {
+		$converted = $multi_currency->prices->unconvert_price_amount( $price, $currency );
+		if ( is_numeric( $converted ) ) {
+			return (float) $converted;
+		}
+	}
+
+	$exchange_rates = apply_filters( 'wcml_exchange_rates', array() );
+	if ( is_array( $exchange_rates ) && isset( $exchange_rates[ $currency ] ) && (float) $exchange_rates[ $currency ] > 0 ) {
+		return $price / (float) $exchange_rates[ $currency ];
+	}
+
+	return $price;
+}
+
+function fsapf_get_price_display_bounds( $bounds, $currency = '' ) {
+	$raw_min = isset( $bounds['min'] ) ? (float) $bounds['min'] : 0;
+	$raw_max = isset( $bounds['max'] ) ? (float) $bounds['max'] : 1000;
+	$min     = floor( fsapf_price_to_display_currency( $raw_min, $currency ) );
+	$max     = ceil( fsapf_price_to_display_currency( $raw_max, $currency ) );
+
+	if ( $max <= $min ) {
+		$max = $min + 1;
+	}
+
+	return array(
+		'min' => $min,
+		'max' => $max,
+	);
+}
+
 function fsapf_invalidate_discovery_cache() {
 	global $wpdb;
 	$wpdb->query( "DELETE FROM {$wpdb->options} WHERE option_name LIKE '_transient_fsapf_discovery_%'" ); // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery

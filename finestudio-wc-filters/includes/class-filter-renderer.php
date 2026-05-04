@@ -121,19 +121,23 @@ class WC_Auto_Product_Filters_Renderer {
 
 	private function render_field( $key, $filter ) {
 		if ( 'price' === $key ) {
-			$bounds      = $this->get_price_bounds();
-			$current_min = isset( $_GET['filter_min_price'] ) && '' !== $_GET['filter_min_price'] ? (float) wc_clean( wp_unslash( $_GET['filter_min_price'] ) ) : $bounds['min'];
-			$current_max = isset( $_GET['filter_max_price'] ) && '' !== $_GET['filter_max_price'] ? (float) wc_clean( wp_unslash( $_GET['filter_max_price'] ) ) : $bounds['max'];
-			echo '<div class="wcapf-price-slider" data-min="' . esc_attr( (string) $bounds['min'] ) . '" data-max="' . esc_attr( (string) $bounds['max'] ) . '">';
+			$bounds           = $this->get_price_bounds();
+			$currency         = fsapf_get_price_filter_currency();
+			$request_currency = fsapf_get_submitted_price_filter_currency( $currency );
+			$current_min      = $this->get_price_display_request_amount( 'filter_min_price', $bounds['min'], $request_currency, $currency, 'min' );
+			$current_max      = $this->get_price_display_request_amount( 'filter_max_price', $bounds['max'], $request_currency, $currency, 'max' );
+			$currency_symbol  = fsapf_get_price_filter_currency_symbol( $currency );
+			echo '<div class="wcapf-price-slider" data-min="' . esc_attr( (string) $bounds['min'] ) . '" data-max="' . esc_attr( (string) $bounds['max'] ) . '" data-currency="' . esc_attr( $currency ) . '">';
+			echo '<input type="hidden" name="wcapf_price_currency" value="' . esc_attr( $currency ) . '" />';
 			echo '<div class="wcapf-range-row">';
 			echo '<div class="wcapf-price-input-wrap">';
 			echo '<input class="wcapf-price-input-min" type="number" step="1" name="filter_min_price" placeholder="' . esc_attr__( 'Min', 'finestudio-wc-filters' ) . '" value="' . esc_attr( (string) $current_min ) . '" />';
-			echo '<span class="wcapf-price-currency">€</span>';
+			echo '<span class="wcapf-price-currency">' . esc_html( $currency_symbol ) . '</span>';
 			echo '</div>';
 			echo '<span class="wcapf-price-separator">-</span>';
 			echo '<div class="wcapf-price-input-wrap">';
 			echo '<input class="wcapf-price-input-max" type="number" step="1" name="filter_max_price" placeholder="' . esc_attr__( 'Max', 'finestudio-wc-filters' ) . '" value="' . esc_attr( (string) $current_max ) . '" />';
-			echo '<span class="wcapf-price-currency">€</span>';
+			echo '<span class="wcapf-price-currency">' . esc_html( $currency_symbol ) . '</span>';
 			echo '</div>';
 			echo '</div>';
 			echo '<div class="wcapf-slider-rail">';
@@ -162,6 +166,35 @@ class WC_Auto_Product_Filters_Renderer {
 		}
 
 		return false;
+	}
+
+	private function get_price_request_amount( $key, $default ) {
+		if ( ! isset( $_GET[ $key ] ) || '' === $_GET[ $key ] || is_array( $_GET[ $key ] ) ) {
+			return $default;
+		}
+
+		$value = wc_clean( wp_unslash( $_GET[ $key ] ) );
+		if ( function_exists( 'wc_format_decimal' ) ) {
+			$value = wc_format_decimal( $value );
+		}
+
+		return (float) $value;
+	}
+
+	private function get_price_display_request_amount( $key, $default, $request_currency, $display_currency, $bound_type ) {
+		if ( ! isset( $_GET[ $key ] ) || '' === $_GET[ $key ] || is_array( $_GET[ $key ] ) ) {
+			return $default;
+		}
+
+		$amount = $this->get_price_request_amount( $key, $default );
+		if ( $request_currency === $display_currency ) {
+			return $amount;
+		}
+
+		$database_amount = fsapf_price_to_database_currency( $amount, $request_currency );
+		$display_amount  = fsapf_price_to_display_currency( $database_amount, $display_currency );
+
+		return 'max' === $bound_type ? ceil( $display_amount ) : floor( $display_amount );
 	}
 
 	private function render_taxonomy_values( $key, $filter ) {
@@ -275,6 +308,9 @@ class WC_Auto_Product_Filters_Renderer {
 			if ( 0 === strpos( $key, 'filter_' ) ) {
 				continue;
 			}
+			if ( 'wcapf_price_currency' === $key ) {
+				continue;
+			}
 
 			if ( is_array( $value ) ) {
 				$kept[ sanitize_key( $key ) ] = array_map( 'sanitize_text_field', wp_unslash( $value ) );
@@ -288,7 +324,8 @@ class WC_Auto_Product_Filters_Renderer {
 
 	private function get_price_bounds() {
 		$category_id = isset( $this->current_context['category_id'] ) ? absint( $this->current_context['category_id'] ) : 0;
-		$cache_key   = $category_id > 0 ? 'cat_' . $category_id : 'shop';
+		$currency    = fsapf_get_price_filter_currency();
+		$cache_key   = ( $category_id > 0 ? 'cat_' . $category_id : 'shop' ) . '_' . $currency;
 		if ( isset( $this->price_bounds_cache[ $cache_key ] ) && is_array( $this->price_bounds_cache[ $cache_key ] ) ) {
 			return $this->price_bounds_cache[ $cache_key ];
 		}
@@ -325,10 +362,11 @@ class WC_Auto_Product_Filters_Renderer {
 			$max = $min + 1;
 		}
 
-		$result = array(
+		$raw_result = array(
 			'min' => $min,
 			'max' => $max,
 		);
+		$result = fsapf_get_price_display_bounds( $raw_result );
 		$this->price_bounds_cache[ $cache_key ] = $result;
 		return $this->price_bounds_cache[ $cache_key ];
 	}
@@ -396,8 +434,8 @@ class WC_Auto_Product_Filters_Renderer {
 
 			if ( 'filter_min_price' === $key || 'filter_max_price' === $key ) {
 				$bounds = $this->get_price_bounds();
-				$min = isset( $_GET['filter_min_price'] ) && '' !== $_GET['filter_min_price'] ? (float) wc_clean( wp_unslash( $_GET['filter_min_price'] ) ) : (float) $bounds['min'];
-				$max = isset( $_GET['filter_max_price'] ) && '' !== $_GET['filter_max_price'] ? (float) wc_clean( wp_unslash( $_GET['filter_max_price'] ) ) : (float) $bounds['max'];
+				$min = $this->get_price_request_amount( 'filter_min_price', (float) $bounds['min'] );
+				$max = $this->get_price_request_amount( 'filter_max_price', (float) $bounds['max'] );
 				if ( $min > (float) $bounds['min'] || $max < (float) $bounds['max'] ) {
 					return true;
 				}
