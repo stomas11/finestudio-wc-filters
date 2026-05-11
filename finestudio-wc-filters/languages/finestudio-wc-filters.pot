@@ -16,6 +16,10 @@ msgstr ""
 "X-Loco-Version: 2.8.4; wp-6.9.4; php-8.1.33\n"
 "X-Domain: finestudio-wc-filters"
 
+#: includes/class-filter-renderer.php:130
+msgid "Active filters"
+msgstr ""
+
 #: includes/class-filter-renderer.php:199
 #: includes/class-filter-renderer.php:208
 msgid "Any"
@@ -185,6 +189,10 @@ msgstr ""
 
 #: includes/class-admin.php:39
 msgid "Radio"
+msgstr ""
+
+#: includes/class-filter-renderer.php:140
+msgid "Remove filter: %s"
 msgstr ""
 
 #: includes/class-filter-renderer.php:79 includes/class-filter-renderer.php:101

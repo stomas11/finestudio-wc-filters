@@ -78,6 +78,7 @@ class WC_Auto_Product_Filters_Renderer {
 				<?php endif; ?>
 				<a class="wcapf-reset" href="<?php echo esc_url( $this->get_reset_url() ); ?>"><?php esc_html_e( 'Reset', 'finestudio-wc-filters' ); ?></a>
 			</form>
+			<?php $this->render_active_filters( $filters ); ?>
 				<?php if ( $sidebar_panel || $mobile_button_only ) : ?>
 					<div class="wcapf-panel-overlay" hidden></div>
 					<div class="wcapf-panel" hidden>
@@ -117,6 +118,153 @@ class WC_Auto_Product_Filters_Renderer {
 				echo '<input type="hidden" name="' . esc_attr( $key ) . '" value="' . esc_attr( $value ) . '" />';
 			}
 		}
+	}
+
+	private function render_active_filters( $filters ) {
+		$badges   = $this->get_active_filter_badges( $filters );
+		$is_empty = empty( $badges );
+
+		echo '<div class="wcapf-active-filters' . ( $is_empty ? ' wcapf-active-filters-empty' : '' ) . '" data-active-count="' . esc_attr( (string) count( $badges ) ) . '"' . ( $is_empty ? ' hidden' : '' ) . '>';
+
+		if ( ! $is_empty ) {
+			echo '<span class="wcapf-active-filters-label">' . esc_html__( 'Active filters', 'finestudio-wc-filters' ) . '</span>';
+			echo '<div class="wcapf-active-filter-list">';
+
+			foreach ( $badges as $badge ) {
+				$label      = isset( $badge['label'] ) ? (string) $badge['label'] : '';
+				$remove_url = isset( $badge['remove_url'] ) ? (string) $badge['remove_url'] : '';
+				$param      = isset( $badge['param'] ) ? (string) $badge['param'] : '';
+				$value      = isset( $badge['value'] ) ? (string) $badge['value'] : '';
+				$type       = isset( $badge['type'] ) ? (string) $badge['type'] : 'filter';
+
+				echo '<a class="wcapf-active-filter-badge" href="' . esc_url( $remove_url ) . '" data-filter-param="' . esc_attr( $param ) . '" data-filter-value="' . esc_attr( $value ) . '" data-filter-type="' . esc_attr( $type ) . '" aria-label="' . esc_attr( sprintf( __( 'Remove filter: %s', 'finestudio-wc-filters' ), $label ) ) . '">';
+				echo '<span class="wcapf-active-filter-text">' . esc_html( $label ) . '</span>';
+				echo '<span class="wcapf-active-filter-x" aria-hidden="true">x</span>';
+				echo '</a>';
+			}
+
+			echo '</div>';
+		}
+
+		echo '</div>';
+	}
+
+	private function get_active_filter_badges( $filters ) {
+		$badges = array();
+
+		foreach ( $filters as $key => $filter ) {
+			if ( 'price' === $key ) {
+				$price_badge = $this->get_active_price_badge( $filter );
+				if ( ! empty( $price_badge ) ) {
+					$badges[] = $price_badge;
+				}
+				continue;
+			}
+
+			if ( 'stock' === $key ) {
+				if ( isset( $_GET['filter_stock'] ) && 'instock' === sanitize_text_field( wp_unslash( $_GET['filter_stock'] ) ) ) {
+					$badges[] = array(
+						'label'      => sprintf( '%1$s: %2$s', $filter['label'], __( 'In stock only', 'finestudio-wc-filters' ) ),
+						'remove_url' => $this->get_remove_filter_url( 'filter_stock' ),
+						'param'      => 'filter_stock',
+						'value'      => 'instock',
+						'type'       => 'single',
+					);
+				}
+				continue;
+			}
+
+			if ( 'sale' === $key ) {
+				if ( isset( $_GET['filter_sale'] ) && '1' === sanitize_text_field( wp_unslash( $_GET['filter_sale'] ) ) ) {
+					$badges[] = array(
+						'label'      => sprintf( '%1$s: %2$s', $filter['label'], __( 'On sale only', 'finestudio-wc-filters' ) ),
+						'remove_url' => $this->get_remove_filter_url( 'filter_sale' ),
+						'param'      => 'filter_sale',
+						'value'      => '1',
+						'type'       => 'single',
+					);
+				}
+				continue;
+			}
+
+			if ( ! empty( $filter['taxonomy'] ) ) {
+				$badges = array_merge( $badges, $this->get_active_taxonomy_badges( $key, $filter ) );
+			}
+		}
+
+		return $badges;
+	}
+
+	private function get_active_price_badge( $filter ) {
+		if ( ! isset( $_GET['filter_min_price'] ) && ! isset( $_GET['filter_max_price'] ) ) {
+			return array();
+		}
+
+		$bounds           = $this->get_price_bounds();
+		$currency         = fsapf_get_price_filter_currency();
+		$request_currency = fsapf_get_submitted_price_filter_currency( $currency );
+		$current_min      = $this->get_price_display_request_amount( 'filter_min_price', $bounds['min'], $request_currency, $currency, 'min' );
+		$current_max      = $this->get_price_display_request_amount( 'filter_max_price', $bounds['max'], $request_currency, $currency, 'max' );
+
+		if ( $current_min <= (float) $bounds['min'] && $current_max >= (float) $bounds['max'] ) {
+			return array();
+		}
+
+		return array(
+			'label'      => sprintf(
+				'%1$s: %2$s - %3$s',
+				$filter['label'],
+				$this->format_price_amount( $current_min, $currency ),
+				$this->format_price_amount( $current_max, $currency )
+			),
+			'remove_url' => $this->get_remove_filter_url( 'price' ),
+			'param'      => 'price',
+			'value'      => '',
+			'type'       => 'price',
+		);
+	}
+
+	private function get_active_taxonomy_badges( $key, $filter ) {
+		$param = 'filter_' . $key;
+		if ( empty( $_GET[ $param ] ) ) {
+			return array();
+		}
+
+		$raw_values = (array) wp_unslash( $_GET[ $param ] );
+		$values     = array_values( array_unique( array_filter( array_map( 'sanitize_title', $raw_values ) ) ) );
+		if ( empty( $values ) ) {
+			return array();
+		}
+
+		$badges = array();
+		foreach ( $values as $value ) {
+			$term_name = $value;
+			$term      = get_term_by( 'slug', $value, $filter['taxonomy'] );
+			if ( $term instanceof WP_Term ) {
+				$term_name = $term->name;
+			}
+
+			$badges[] = array(
+				'label'      => sprintf( '%1$s: %2$s', $filter['label'], $term_name ),
+				'remove_url' => $this->get_remove_filter_url( $param, $value ),
+				'param'      => $param,
+				'value'      => $value,
+				'type'       => 'term',
+			);
+		}
+
+		return $badges;
+	}
+
+	private function format_price_amount( $amount, $currency ) {
+		if ( function_exists( 'wc_price' ) ) {
+			$price = wp_strip_all_tags( wc_price( (float) $amount, array( 'currency' => $currency ) ) );
+			$price = html_entity_decode( $price, ENT_QUOTES, get_bloginfo( 'charset' ) ? get_bloginfo( 'charset' ) : 'UTF-8' );
+			return trim( str_replace( "\xc2\xa0", ' ', $price ) );
+		}
+
+		$formatted = function_exists( 'number_format_i18n' ) ? number_format_i18n( (float) $amount, 0 ) : (string) $amount;
+		return trim( $formatted . ' ' . fsapf_get_price_filter_currency_symbol( $currency ) );
 	}
 
 	private function render_field( $key, $filter ) {
@@ -316,6 +464,58 @@ class WC_Auto_Product_Filters_Renderer {
 				$kept[ sanitize_key( $key ) ] = array_map( 'sanitize_text_field', wp_unslash( $value ) );
 			} else {
 				$kept[ sanitize_key( $key ) ] = sanitize_text_field( wp_unslash( $value ) );
+			}
+		}
+
+		return add_query_arg( $kept, remove_query_arg( array_keys( $_GET ) ) );
+	}
+
+	private function get_remove_filter_url( $param, $remove_value = null ) {
+		$param       = sanitize_key( (string) $param );
+		$remove_slug = null !== $remove_value ? sanitize_title( (string) $remove_value ) : null;
+		$kept        = array();
+
+		foreach ( $_GET as $key => $value ) {
+			$clean_key = sanitize_key( $key );
+			if ( '' === $clean_key || in_array( $clean_key, array( 'paged', 'product-page' ), true ) ) {
+				continue;
+			}
+
+			if ( 'price' === $param && in_array( $clean_key, array( 'filter_min_price', 'filter_max_price', 'wcapf_price_currency' ), true ) ) {
+				continue;
+			}
+
+			if ( $clean_key === $param ) {
+				if ( null === $remove_slug ) {
+					continue;
+				}
+
+				$values = is_array( $value ) ? array_map( 'sanitize_text_field', wp_unslash( $value ) ) : array( sanitize_text_field( wp_unslash( $value ) ) );
+				$values = array_values(
+					array_filter(
+						$values,
+						function( $item ) use ( $remove_slug ) {
+							return sanitize_title( $item ) !== $remove_slug && '' !== trim( (string) $item );
+						}
+					)
+				);
+
+				if ( ! empty( $values ) ) {
+					$kept[ $clean_key ] = $values;
+				}
+				continue;
+			}
+
+			if ( is_array( $value ) ) {
+				$clean_value = array_values( array_filter( array_map( 'sanitize_text_field', wp_unslash( $value ) ) ) );
+				if ( ! empty( $clean_value ) ) {
+					$kept[ $clean_key ] = $clean_value;
+				}
+			} else {
+				$clean_value = sanitize_text_field( wp_unslash( $value ) );
+				if ( '' !== $clean_value ) {
+					$kept[ $clean_key ] = $clean_value;
+				}
 			}
 		}
 

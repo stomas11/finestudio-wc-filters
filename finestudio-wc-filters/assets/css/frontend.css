@@ -137,6 +137,97 @@
   border-color:#9ca3af;
 }
 .wcapf-filters .wcapf-submit { margin-right:8px; }
+.wcapf-active-filters {
+  display:flex;
+  align-items:flex-start;
+  flex-wrap:wrap;
+  gap:10px 12px;
+  margin-top:1rem;
+  padding-top:1rem;
+  border-top:1px solid #e5e7eb;
+}
+.wcapf-active-filters[hidden],
+.wcapf-active-filters-empty {
+  display:none !important;
+}
+.wcapf-active-filters-label {
+  padding-top:7px;
+  font-size:13px;
+  font-weight:700;
+  line-height:1.2;
+  color:#475569;
+}
+.wcapf-active-filter-list {
+  display:flex;
+  flex:1 1 220px;
+  flex-wrap:wrap;
+  gap:8px;
+  min-width:0;
+}
+.wcapf-active-filter-badge {
+  display:inline-flex;
+  align-items:center;
+  gap:8px;
+  min-height:32px;
+  max-width:100%;
+  padding:5px 8px 5px 12px;
+  border:1px solid #cbd5e1;
+  border-radius:999px;
+  background:#f8fafc;
+  color:#0f172a;
+  font-size:13px;
+  font-weight:600;
+  line-height:1.2;
+  text-decoration:none;
+  overflow-wrap:anywhere;
+  word-break:break-word;
+}
+.wcapf-active-filter-badge:hover {
+  border-color:var(--wcapf-primary);
+  background:#fff;
+  color:#0f172a;
+  text-decoration:none;
+}
+.wcapf-active-filter-badge:focus-visible {
+  outline:2px solid #3b82f6;
+  outline-offset:2px;
+}
+.wcapf-active-filter-text {
+  min-width:0;
+}
+.wcapf-active-filter-x {
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  position:relative;
+  width:18px;
+  height:18px;
+  flex:0 0 18px;
+  border-radius:999px;
+  background:#e2e8f0;
+  color:#334155;
+  font-size:0;
+  line-height:0;
+}
+.wcapf-active-filter-x::before,
+.wcapf-active-filter-x::after {
+  content:"";
+  position:absolute;
+  top:50%;
+  left:50%;
+  width:8px;
+  height:2px;
+  border-radius:999px;
+  background:currentColor;
+  transform:translate(-50%, -50%) rotate(45deg);
+}
+.wcapf-active-filter-x::after {
+  transform:translate(-50%, -50%) rotate(-45deg);
+}
+.wcapf-active-filter-badge:hover .wcapf-active-filter-x {
+  background:var(--wcapf-primary);
+  color:#fff;
+}
 .wcapf-filters .wcapf-show-all,
 .wcapf-filters .wcapf-close-panel,
 .wcapf-filters .wcapf-open-mobile-filters {
@@ -524,6 +615,18 @@ body.wcapf-panel-open .wcapf-open-mobile-filters-fab {
   }
   .wcapf-filters .wcapf-submit {
     margin-right:0;
+  }
+  .wcapf-active-filters {
+    display:block;
+    text-align:left;
+  }
+  .wcapf-active-filters-label {
+    display:block;
+    padding-top:0;
+    margin-bottom:8px;
+  }
+  .wcapf-active-filter-list {
+    display:flex;
   }
   .wcapf-filters[data-collapse-filters="1"]:not(.wcapf-mobile-button-only):not(.wcapf-mobile-expanded) > .wcapf-form > .wcapf-fields > .wcapf-field:nth-child(n+2) {
     display:none;

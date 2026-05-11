@@ -62,6 +62,8 @@ class WC_Auto_Product_Filters_Plugin {
 					'showingOneResult' => __( 'Showing 1 result', 'finestudio-wc-filters' ),
 					'showingResults'   => __( 'Showing %d results', 'finestudio-wc-filters' ),
 					'showAllFilters'   => __( 'Show all filters', 'finestudio-wc-filters' ),
+					'activeFilters'    => __( 'Active filters', 'finestudio-wc-filters' ),
+					'removeFilter'     => __( 'Remove filter: %s', 'finestudio-wc-filters' ),
 				),
 			)
 		);

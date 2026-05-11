@@ -85,6 +85,7 @@ function Get-HeaderLines {
 }
 
 $MessageIds = @(
+	'Active filters',
 	'Any',
 	'Attribute Colors',
 	'Auto submit on change',
@@ -126,6 +127,7 @@ $MessageIds = @(
 	'Products container ID (without #)',
 	'Products container selector',
 	'Radio',
+	'Remove filter: %s',
 	'Reset',
 	'Save colors',
 	'Save filters',
@@ -148,6 +150,7 @@ $MessageIds = @(
 
 $Translations = @{
 	'sk_SK' = [ordered] @{
+		'Active filters' = (T 'Akt&#x00ED;vne filtre')
 		'Any' = (T '&#x013D;ubovo&#x013E;n&#x00E9;')
 		'Attribute Colors' = (T 'Farby atrib&#x00FA;tov')
 		'Auto submit on change' = (T 'Automaticky odosla&#x0165; pri zmene')
@@ -189,6 +192,7 @@ $Translations = @{
 		'Products container ID (without #)' = 'ID kontajnera produktov (bez #)'
 		'Products container selector' = 'Selektor kontajnera produktov'
 		'Radio' = (T 'Prep&#x00ED;na&#x010D;')
+		'Remove filter: %s' = (T 'Odstr&#x00E1;ni&#x0165; filter: %s')
 		'Reset' = (T 'Resetova&#x0165;')
 		'Save colors' = (T 'Ulo&#x017E;i&#x0165; farby')
 		'Save filters' = (T 'Ulo&#x017E;i&#x0165; filtre')
@@ -209,6 +213,7 @@ $Translations = @{
 		'Visible filters before "Show all"' = (T 'Po&#x010D;et filtrov pred tla&#x010D;idlom "Zobrazi&#x0165; v&#x0161;etko"')
 	}
 	'cs_CZ' = [ordered] @{
+		'Active filters' = (T 'Aktivn&#x00ED; filtry')
 		'Any' = (T 'Libovoln&#x00E9;')
 		'Attribute Colors' = (T 'Barvy atribut&#x016F;')
 		'Auto submit on change' = (T 'Automaticky odeslat p&#x0159;i zm&#x011B;n&#x011B;')
@@ -250,6 +255,7 @@ $Translations = @{
 		'Products container ID (without #)' = (T 'ID kontejneru produkt&#x016F; (bez #)')
 		'Products container selector' = (T 'Selektor kontejneru produkt&#x016F;')
 		'Radio' = (T 'P&#x0159;ep&#x00ED;na&#x010D;')
+		'Remove filter: %s' = 'Odstranit filtr: %s'
 		'Reset' = 'Resetovat'
 		'Save colors' = (T 'Ulo&#x017E;it barvy')
 		'Save filters' = (T 'Ulo&#x017E;it filtry')

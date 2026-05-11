@@ -269,6 +269,243 @@
     }
   }
 
+  function replaceActiveFiltersFromDoc($wrap, doc) {
+    var $current = $wrap.children('.wcapf-active-filters').first();
+    var $incoming = $(doc).find('.wcapf-active-filters').first();
+
+    if (!$current.length || !$incoming.length) return false;
+
+    $current.replaceWith($incoming);
+    return true;
+  }
+
+  function normalizeFilterParam(name) {
+    return String(name || '').replace(/\[\]$/, '');
+  }
+
+  function cleanOptionText(text) {
+    return String(text || '')
+      .replace(/\s+/g, ' ')
+      .replace(/\s*-\s*$/, '')
+      .trim();
+  }
+
+  function getFieldTitle($input) {
+    var $field = $input.closest('.wcapf-field');
+    return cleanOptionText($field.children('.wcapf-title').first().text());
+  }
+
+  function getInputOptionText($input) {
+    var $label = $input.closest('label');
+    if (!$label.length) return cleanOptionText($input.val());
+
+    if ($label.hasClass('wcapf-swatch')) {
+      return cleanOptionText($label.attr('title') || $label.attr('aria-label') || $input.val());
+    }
+
+    var $clone = $label.clone();
+    $clone.find('input, .wcapf-term-count').remove();
+    return cleanOptionText($clone.text());
+  }
+
+  function getPriceBadge($form) {
+    var $price = $form.find('.wcapf-price-slider').first();
+    if (!$price.length) return null;
+
+    var minLimit = parseFloat($price.data('min'));
+    var maxLimit = parseFloat($price.data('max'));
+    var minVal = parseFloat($price.find('.wcapf-price-input-min').first().val());
+    var maxVal = parseFloat($price.find('.wcapf-price-input-max').first().val());
+
+    if (isNaN(minLimit) || isNaN(maxLimit) || isNaN(minVal) || isNaN(maxVal)) return null;
+    if (minVal <= minLimit && maxVal >= maxLimit) return null;
+
+    var title = getFieldTitle($price);
+    var currency = cleanOptionText($price.find('.wcapf-price-currency').first().text());
+    var minText = currency ? minVal + ' ' + currency : String(minVal);
+    var maxText = currency ? maxVal + ' ' + currency : String(maxVal);
+
+    return {
+      label: (title ? title + ': ' : '') + minText + ' - ' + maxText,
+      param: 'price',
+      value: '',
+      type: 'price'
+    };
+  }
+
+  function buildRemoveUrlFromForm($form, param, value, type) {
+    var params = new URLSearchParams(buildCleanQuery($form));
+
+    if (type === 'price') {
+      params.delete('filter_min_price');
+      params.delete('filter_max_price');
+      params.delete('wcapf_price_currency');
+    } else {
+      [param, param + '[]'].forEach(function (key) {
+        var values = params.getAll(key);
+        params.delete(key);
+        values.forEach(function (item) {
+          if (String(item) !== String(value)) {
+            params.append(key, item);
+          }
+        });
+      });
+    }
+
+    var query = params.toString();
+    return window.location.pathname + (query ? '?' + query : '');
+  }
+
+  function getActiveBadgesFromForm($form) {
+    var badges = [];
+    var priceBadge = getPriceBadge($form);
+
+    if (priceBadge) {
+      badges.push(priceBadge);
+    }
+
+    $form.find('[name]').each(function () {
+      var $input = $(this);
+      var name = $input.attr('name') || '';
+      if (name.indexOf('filter_') !== 0) return;
+      if (name === 'filter_min_price' || name === 'filter_max_price') return;
+
+      var param = normalizeFilterParam(name);
+      var type = String($input.attr('type') || '').toLowerCase();
+      var tag = String($input.prop('tagName') || '').toLowerCase();
+      var fieldTitle = getFieldTitle($input);
+
+      if (type === 'checkbox' || type === 'radio') {
+        if (!$input.is(':checked') || String($input.val() || '').trim() === '') return;
+
+        badges.push({
+          label: (fieldTitle ? fieldTitle + ': ' : '') + getInputOptionText($input),
+          param: param,
+          value: String($input.val()),
+          type: 'filter'
+        });
+        return;
+      }
+
+      if (tag === 'select') {
+        $input.find('option:selected').each(function () {
+          var $option = $(this);
+          var value = String($option.val() || '');
+          if (value.trim() === '') return;
+
+          badges.push({
+            label: (fieldTitle ? fieldTitle + ': ' : '') + cleanOptionText($option.text()),
+            param: param,
+            value: value,
+            type: 'filter'
+          });
+        });
+      }
+    });
+
+    return badges;
+  }
+
+  function ensureActiveFiltersContainer($wrap) {
+    var $active = $wrap.children('.wcapf-active-filters').first();
+    if ($active.length) return $active;
+
+    $active = $('<div class="wcapf-active-filters wcapf-active-filters-empty" data-active-count="0" hidden></div>');
+    var $form = $wrap.children('.wcapf-form').first();
+    if ($form.length) {
+      $active.insertAfter($form);
+    } else {
+      $wrap.append($active);
+    }
+    return $active;
+  }
+
+  function renderActiveBadges($wrap, $form, badges) {
+    var $active = ensureActiveFiltersContainer($wrap);
+    $active.empty().attr('data-active-count', badges.length);
+
+    if (!badges.length) {
+      $active.addClass('wcapf-active-filters-empty').prop('hidden', true);
+      return;
+    }
+
+    $active.removeClass('wcapf-active-filters-empty').prop('hidden', false);
+    $('<span class="wcapf-active-filters-label"></span>')
+      .text(getString('activeFilters', 'Active filters'))
+      .appendTo($active);
+
+    var $list = $('<div class="wcapf-active-filter-list"></div>').appendTo($active);
+    badges.forEach(function (badge) {
+      var href = buildRemoveUrlFromForm($form, badge.param, badge.value, badge.type);
+      var removeLabel = getString('removeFilter', 'Remove filter: %s').replace('%s', badge.label);
+
+      $('<a class="wcapf-active-filter-badge"></a>')
+        .attr({
+          href: href,
+          'data-filter-param': badge.param,
+          'data-filter-value': badge.value,
+          'data-filter-type': badge.type,
+          'aria-label': removeLabel
+        })
+        .append($('<span class="wcapf-active-filter-text"></span>').text(badge.label))
+        .append($('<span class="wcapf-active-filter-x" aria-hidden="true">x</span>'))
+        .appendTo($list);
+    });
+  }
+
+  function updateActiveFiltersFromForm($form) {
+    var $wrap = $form.closest('.wcapf-filters');
+    if (!$wrap.length) return;
+
+    renderActiveBadges($wrap, $form, getActiveBadgesFromForm($form));
+  }
+
+  function syncFormsFrom($sourceForm) {
+    var $wrap = $sourceForm.closest('.wcapf-filters');
+    if (!$wrap.length) return;
+
+    $wrap.find('.wcapf-form').not($sourceForm).each(function () {
+      var $targetForm = $(this);
+
+      $targetForm.find('[name]').each(function () {
+        var $target = $(this);
+        var name = $target.attr('name');
+        if (!name) return;
+
+        var type = String($target.attr('type') || '').toLowerCase();
+        var tag = String($target.prop('tagName') || '').toLowerCase();
+        var $source = $sourceForm.find('[name="' + name.replace(/"/g, '\\"') + '"]');
+
+        if (!$source.length) return;
+
+        if (type === 'checkbox' || type === 'radio') {
+          var targetValue = String($target.val());
+          var isChecked = $source.filter(function () {
+            return String($(this).val()) === targetValue && $(this).is(':checked');
+          }).length > 0;
+          $target.prop('checked', isChecked);
+          return;
+        }
+
+        if (tag === 'select') {
+          $target.val($source.first().val());
+          return;
+        }
+
+        $target.val($source.first().val());
+      });
+
+      var sourceMin = $sourceForm.find('.wcapf-price-input-min').first().val();
+      var sourceMax = $sourceForm.find('.wcapf-price-input-max').first().val();
+      if (typeof sourceMin !== 'undefined') {
+        $targetForm.find('.wcapf-price-input-min, .wcapf-range-min').val(sourceMin);
+      }
+      if (typeof sourceMax !== 'undefined') {
+        $targetForm.find('.wcapf-price-input-max, .wcapf-range-max').val(sourceMax);
+      }
+    });
+  }
+
   function syncResultCountWithRenderedProducts() {
     var selector = resolveProductsSelector();
     var $productsWrap = $(selector).first();
@@ -379,9 +616,13 @@
   function applyAjax($form, onDone) {
     if (!isAjaxEnabled()) return;
 
+    syncFormsFrom($form);
+    updateActiveFiltersFromForm($form);
+
     var query = buildCleanQuery($form);
 
     var url = window.location.pathname + (query ? '?' + query : '');
+    var $wrap = $form.closest('.wcapf-filters');
 
     $form.addClass('wcapf-loading');
 
@@ -392,6 +633,8 @@
         replaceProductsFromDoc(doc);
         replaceOptionalSection('.woocommerce-pagination', doc);
         replaceOptionalSection('.woocommerce-result-count', doc, true);
+        replaceActiveFiltersFromDoc($wrap, doc);
+        updateActiveFiltersFromForm($form);
         syncResultCountWithRenderedProducts();
         setTimeout(syncResultCountWithRenderedProducts, 80);
 
@@ -409,6 +652,71 @@
           onDone();
         }
       });
+  }
+
+  function findInputsByParam($form, param) {
+    return $form.find('[name]').filter(function () {
+      var name = $(this).attr('name') || '';
+      return name === param || name === param + '[]';
+    });
+  }
+
+  function clearBadgeSelection($form, $badge) {
+    var param = String($badge.data('filter-param') || '');
+    var value = String($badge.data('filter-value') || '');
+    var type = String($badge.data('filter-type') || 'filter');
+
+    if (!param) return;
+
+    if (type === 'price') {
+      var $price = $form.find('.wcapf-price-slider').first();
+      if (!$price.length) return;
+
+      var minLimit = parseFloat($price.data('min'));
+      var maxLimit = parseFloat($price.data('max'));
+      if (!isNaN(minLimit)) {
+        $price.find('.wcapf-price-input-min, .wcapf-range-min').val(minLimit);
+      }
+      if (!isNaN(maxLimit)) {
+        $price.find('.wcapf-price-input-max, .wcapf-range-max').val(maxLimit);
+      }
+      return;
+    }
+
+    var $inputs = findInputsByParam($form, param);
+    if (!$inputs.length) return;
+
+    $inputs.each(function () {
+      var $input = $(this);
+      var inputType = String($input.attr('type') || '').toLowerCase();
+      var tagName = String($input.prop('tagName') || '').toLowerCase();
+
+      if (inputType === 'checkbox' || inputType === 'radio') {
+        if (String($input.val()) === value) {
+          $input.prop('checked', false);
+        }
+        return;
+      }
+
+      if (tagName === 'select' && $input.prop('multiple')) {
+        var selected = $input.val() || [];
+        $input.val(selected.filter(function (item) {
+          return String(item) !== value;
+        }));
+        return;
+      }
+
+      if (String($input.val()) === value) {
+        $input.val('');
+      }
+    });
+
+    var $emptyRadio = $inputs.filter(function () {
+      return String($(this).attr('type') || '').toLowerCase() === 'radio' && String($(this).val()) === '';
+    }).first();
+    if ($emptyRadio.length) {
+      $emptyRadio.prop('checked', true);
+    }
   }
 
   $(document).on('submit', '.wcapf-form', function (e) {
@@ -433,6 +741,26 @@
     if ($form.hasClass('wcapf-panel-form')) {
       $form.removeClass('wcapf-dirty');
     }
+  });
+
+  $(document).on('click', '.wcapf-active-filter-badge', function (e) {
+    if (!isAjaxEnabled()) return;
+
+    e.preventDefault();
+
+    var $badge = $(this);
+    var $wrap = $badge.closest('.wcapf-filters');
+    var $form = $wrap.children('.wcapf-form').first();
+
+    if (!$form.length) {
+      window.location.assign($badge.attr('href'));
+      return;
+    }
+
+    $wrap.find('.wcapf-form').each(function () {
+      clearBadgeSelection($(this), $badge);
+    });
+    $form.trigger('submit');
   });
 
   $(document).on('change', '.wcapf-form input, .wcapf-form select', function () {
